@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -39,7 +39,23 @@ export default function ProjectManagement() {
   const [showTaskDialog, setShowTaskDialog] = useState(false)
   const [taskDialogMode, setTaskDialogMode] = useState<'add' | 'edit'>('add')
   const [taskDialogIndex, setTaskDialogIndex] = useState<number | null>(null)
-  const [taskFormData, setTaskFormData] = useState({
+  const [taskFormData, setTaskFormData] = useState<{
+    id?: number
+    name: string
+    description: string
+    type: string
+    priority: string
+    status: string
+    userId: string
+    targetQuantity: number
+    unit: string
+    completedQuantity: number
+    hoursPerUnit: number
+    startTime: string
+    endTime: string
+    members: number[]
+  }>({
+    id: undefined,
     name: '',
     description: '',
     type: '项目任务',
@@ -287,6 +303,7 @@ export default function ProjectManagement() {
 
   const addTask = () => {
     setTaskFormData({
+      id: undefined,
       name: '',
       description: '',
       type: '项目任务',
@@ -309,6 +326,7 @@ export default function ProjectManagement() {
   const openEditTask = (index: number) => {
     const task = tasks[index]
     setTaskFormData({
+      id: task.id,
       name: task.name,
       description: task.description,
       type: task.type,
@@ -333,10 +351,11 @@ export default function ProjectManagement() {
       alert('请填写任务名称和负责人')
       return
     }
+    const taskToSave = { ...taskFormData }
     if (taskDialogMode === 'add') {
-      setTasks(prev => [...prev, { ...taskFormData }])
+      setTasks(prev => [...prev, taskToSave])
     } else if (taskDialogIndex !== null) {
-      setTasks(prev => prev.map((t, i) => i === taskDialogIndex ? { ...taskFormData } : t))
+      setTasks(prev => prev.map((t, i) => i === taskDialogIndex ? taskToSave : t))
     }
     setShowTaskDialog(false)
   }
