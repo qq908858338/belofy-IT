@@ -429,7 +429,7 @@ export default function TaskManagement() {
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">参与成员</label>
               <div className="flex flex-wrap gap-2">
-                {users.map((user) => (
+                {users.filter(u => u.id.toString() !== formData.userId).map((user) => (
                   <Button
                     key={user.id}
                     variant={formData.members.includes(user.id) ? 'secondary' : 'outline'}
@@ -630,7 +630,7 @@ export default function TaskManagement() {
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">参与成员</label>
               <div className="flex flex-wrap gap-2">
-                {users.map((user) => (
+                {users.filter(u => u.id.toString() !== formData.userId).map((user) => (
                   <Button
                     key={user.id}
                     variant={formData.members.includes(user.id) ? 'secondary' : 'outline'}

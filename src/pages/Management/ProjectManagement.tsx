@@ -1,9 +1,10 @@
-﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Popconfirm } from '@/components/ui/popconfirm'
-import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
+import { Progress } from '@/components/ui/progress'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Plus, Edit, Trash2, Rocket, Code, Target, Globe, Building2, Users, Star, BookOpen, X } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
@@ -35,6 +36,24 @@ export default function ProjectManagement() {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<'basic' | 'tasks'>('basic')
+  const [showTaskDialog, setShowTaskDialog] = useState(false)
+  const [taskDialogMode, setTaskDialogMode] = useState<'add' | 'edit'>('add')
+  const [taskDialogIndex, setTaskDialogIndex] = useState<number | null>(null)
+  const [taskFormData, setTaskFormData] = useState({
+    name: '',
+    description: '',
+    type: '项目任务',
+    priority: 'P2',
+    status: '进行中',
+    userId: '',
+    targetQuantity: 100,
+    unit: '个',
+    completedQuantity: 0,
+    hoursPerUnit: 1,
+    startTime: '',
+    endTime: '',
+    members: [] as number[],
+  })
   const [tasks, setTasks] = useState<{
     id?: number
     name: string
@@ -164,7 +183,7 @@ export default function ProjectManagement() {
       status: project.status || '',
     })
     
-    const memberIds = (project as any).members?.map((m: any) => m.userId) || []
+    const memberIds = (project as any).members?.map((m: any) => m.userId).filter((id: number) => id !== project.managerId) || []
     setSelectedMembers(memberIds)
 
     try {
@@ -251,8 +270,9 @@ export default function ProjectManagement() {
       setShowEditDialog(false)
       setEditingProjectId(null)
       setTasks([])
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update project:', error)
+      alert('保存失败：' + (error?.response?.data?.message || error?.response?.data?.detail || error?.message || '未知错误'))
     }
   }
 
@@ -266,7 +286,7 @@ export default function ProjectManagement() {
   }
 
   const addTask = () => {
-    setTasks(prev => [...prev, {
+    setTaskFormData({
       name: '',
       description: '',
       type: '项目任务',
@@ -280,7 +300,45 @@ export default function ProjectManagement() {
       startTime: '',
       endTime: '',
       members: [] as number[],
-    }])
+    })
+    setTaskDialogMode('add')
+    setTaskDialogIndex(null)
+    setShowTaskDialog(true)
+  }
+
+  const openEditTask = (index: number) => {
+    const task = tasks[index]
+    setTaskFormData({
+      name: task.name,
+      description: task.description,
+      type: task.type,
+      priority: task.priority,
+      status: task.status,
+      userId: task.userId,
+      targetQuantity: task.targetQuantity,
+      unit: task.unit,
+      completedQuantity: task.completedQuantity,
+      hoursPerUnit: task.hoursPerUnit,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      members: task.members || [],
+    })
+    setTaskDialogMode('edit')
+    setTaskDialogIndex(index)
+    setShowTaskDialog(true)
+  }
+
+  const saveTaskDialog = () => {
+    if (!taskFormData.name || !taskFormData.userId) {
+      alert('请填写任务名称和负责人')
+      return
+    }
+    if (taskDialogMode === 'add') {
+      setTasks(prev => [...prev, { ...taskFormData }])
+    } else if (taskDialogIndex !== null) {
+      setTasks(prev => prev.map((t, i) => i === taskDialogIndex ? { ...taskFormData } : t))
+    }
+    setShowTaskDialog(false)
   }
 
   const updateTaskField = (index: number, field: string, value: any) => {
@@ -312,6 +370,25 @@ export default function ProjectManagement() {
     if (!managerId) return '未分配'
     const user = users.find(u => u.id === managerId)
     return user ? user.nickname : '未知用户'
+  }
+
+  const getProjectProgress = (project: any) => {
+    const tasks = project.tasks || []
+    if (tasks.length === 0) return 0
+    const total = tasks.reduce((sum: number, t: any) => {
+      return sum + (t.completedQuantity / t.targetQuantity * 100)
+    }, 0)
+    return Math.round(total / tasks.length)
+  }
+
+  const getUserName = (userId: number | string) => {
+    const user = users.find(u => u.id === parseInt(userId.toString()))
+    return user ? user.nickname : '未分配'
+  }
+
+  const getTaskProgress = (task: any) => {
+    if (!task.targetQuantity || task.targetQuantity === 0) return 0
+    return Math.round((task.completedQuantity / task.targetQuantity) * 100)
   }
 
   if (loading) {
@@ -363,9 +440,19 @@ export default function ProjectManagement() {
                     <p className="text-sm text-slate-400 mb-4 line-clamp-2">{project.description}</p>
                   )}
 
-                  <div className="flex items-center justify-between text-xs text-slate-500 mb-4">
-                    <span>{project.startTime}</span>
-                    <span>{project.endTime}</span>
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center justify-between text-xs text-slate-500">
+                      <span>{project.startTime}</span>
+                      <span>{project.endTime}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-slate-400">
+                      <span>任务数：{project.tasks?.length || 0}</span>
+                      <span>{getProjectProgress(project)}%</span>
+                    </div>
+                    <Progress
+                      value={getProjectProgress(project)}
+                      className="h-2 bg-slate-700"
+                    />
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -500,7 +587,7 @@ export default function ProjectManagement() {
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-2">成员选择</label>
                 <div className="flex flex-wrap gap-2">
-                  {users.map((user) => (
+                  {users.filter(u => u.id.toString() !== formData.managerId).map((user) => (
                     <button
                       key={user.id}
                       onClick={() => toggleMember(user.id)}
@@ -532,194 +619,43 @@ export default function ProjectManagement() {
               </div>
             </div>)}
             
-            {activeTab === 'tasks' && (<div className="px-4 pb-4 space-y-4">
-              <div className="flex justify-end">
+            {activeTab === 'tasks' && (<div className="px-4 pb-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-400">共 {tasks.length} 个任务</span>
                 <Button variant="outline" size="sm" className="bg-slate-800 text-slate-300 hover:bg-slate-700" onClick={addTask}>
                   <Plus className="w-4 h-4 mr-1" />
                   添加任务
                 </Button>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {tasks.length === 0 ? (
                   <p className="text-slate-500 text-center py-8">暂无细分任务</p>
                 ) : (
                   tasks.map((task, index) => (
-                    <div key={index} className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-medium text-indigo-400">任务 {index + 1}</span>
-                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 h-6 w-6" onClick={() => removeTask(index)}>
-                          <X className="w-4 h-4" />
-                        </Button>
+                    <div key={index} className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-white truncate">{task.name || '未命名任务'}</span>
+                          <span className={`px-1.5 py-0.5 rounded text-xs ${
+                            task.priority === 'P1' ? 'bg-red-500/10 text-red-400' :
+                            task.priority === 'P2' ? 'bg-orange-500/10 text-orange-400' :
+                            'bg-blue-500/10 text-blue-400'
+                          }`}>{task.priority}</span>
+                          <span className="px-1.5 py-0.5 rounded text-xs bg-green-500/10 text-green-400">{task.status}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <span>负责人：{task.userId ? getUserName(task.userId) : '未分配'}</span>
+                          <span>进度：{task.completedQuantity}/{task.targetQuantity}{task.unit} ({getTaskProgress(task)}%)</span>
+                        </div>
                       </div>
-                      
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">任务名称</label>
-                          <Input
-                            value={task.name}
-                            onChange={(e) => updateTaskField(index, 'name', e.target.value)}
-                            placeholder="请输入任务名称"
-                            className="bg-slate-700 border-slate-600 text-white text-sm"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">任务描述</label>
-                          <Input
-                            value={task.description}
-                            onChange={(e) => updateTaskField(index, 'description', e.target.value)}
-                            placeholder="请输入任务描述"
-                            className="bg-slate-700 border-slate-600 text-white text-sm"
-                          />
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-xs text-slate-500 mb-1">任务类型</label>
-                            <select
-                              value={task.type}
-                              onChange={(e) => updateTaskField(index, 'type', e.target.value)}
-                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                            >
-                              <option value="项目任务">项目任务</option>
-                              <option value="日常任务">日常任务</option>
-                              <option value="临时任务">临时任务</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs text-slate-500 mb-1">优先级</label>
-                            <select
-                              value={task.priority}
-                              onChange={(e) => updateTaskField(index, 'priority', e.target.value)}
-                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                            >
-                              <option value="P1">P1 - 紧急</option>
-                              <option value="P2">P2 - 重要</option>
-                              <option value="P3">P3 - 一般</option>
-                            </select>
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-xs text-slate-500 mb-1">状态</label>
-                            <select
-                              value={task.status}
-                              onChange={(e) => updateTaskField(index, 'status', e.target.value)}
-                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                            >
-                              <option value="进行中">进行中</option>
-                              <option value="已完成">已完成</option>
-                              <option value="待修改">待修改</option>
-                              <option value="已延期">已延期</option>
-                              <option value="待评审">待评审</option>
-                              <option value="已评审">已评审</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs text-slate-500 mb-1">负责人</label>
-                            <select
-                              value={task.userId}
-                              onChange={(e) => updateTaskField(index, 'userId', e.target.value)}
-                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                            >
-                              <option value="">请选择负责人</option>
-                              {users.map((user) => (
-                                <option key={user.id} value={user.id}>{user.nickname}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-xs text-slate-500 mb-1">开始时间</label>
-                            <input
-                              type="date"
-                              value={task.startTime}
-                              onChange={(e) => updateTaskField(index, 'startTime', e.target.value)}
-                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs text-slate-500 mb-1">结束时间</label>
-                            <input
-                              type="date"
-                              value={task.endTime}
-                              onChange={(e) => updateTaskField(index, 'endTime', e.target.value)}
-                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                            />
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">参与成员</label>
-                          <div className="flex flex-wrap gap-2">
-                            {users.map((user) => (
-                              <button
-                                key={user.id}
-                                onClick={() => {
-                                  const members = task.members || []
-                                  if (members.includes(user.id)) {
-                                    updateTaskField(index, 'members', members.filter((id: number) => id !== user.id))
-                                  } else {
-                                    updateTaskField(index, 'members', [...members, user.id])
-                                  }
-                                }}
-                                className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
-                                  (task.members || []).includes(user.id)
-                                    ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50'
-                                    : 'bg-slate-700 text-slate-400 border-slate-600 hover:border-slate-500'
-                                }`}
-                              >
-                                {user.nickname}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">量化</label>
-                          <div className="grid grid-cols-4 gap-2">
-                            <div>
-                              <span className="text-xs text-slate-500">目标数量</span>
-                              <Input
-                                type="number"
-                                value={task.targetQuantity}
-                                onChange={(e) => updateTaskField(index, 'targetQuantity', parseInt(e.target.value) || 0)}
-                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
-                              />
-                            </div>
-                            <div>
-                              <span className="text-xs text-slate-500">单位</span>
-                              <Input
-                                value={task.unit}
-                                onChange={(e) => updateTaskField(index, 'unit', e.target.value)}
-                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
-                                placeholder="个"
-                              />
-                            </div>
-                            <div>
-                              <span className="text-xs text-slate-500">已完成</span>
-                              <Input
-                                type="number"
-                                value={task.completedQuantity}
-                                onChange={(e) => updateTaskField(index, 'completedQuantity', parseInt(e.target.value) || 0)}
-                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
-                              />
-                            </div>
-                            <div>
-                              <span className="text-xs text-slate-500">工时/单位</span>
-                              <Input
-                                type="number"
-                                value={task.hoursPerUnit}
-                                onChange={(e) => updateTaskField(index, 'hoursPerUnit', parseFloat(e.target.value) || 0)}
-                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
-                              />
-                            </div>
-                          </div>
-                        </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 h-7 w-7" onClick={() => openEditTask(index)}>
+                          <Edit className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 h-7 w-7" onClick={() => removeTask(index)}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                     </div>
                   ))
@@ -843,7 +779,7 @@ export default function ProjectManagement() {
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-2">成员选择</label>
                 <div className="flex flex-wrap gap-2">
-                  {users.map((user) => (
+                  {users.filter(u => u.id.toString() !== formData.managerId).map((user) => (
                     <button
                       key={user.id}
                       onClick={() => toggleMember(user.id)}
@@ -875,194 +811,43 @@ export default function ProjectManagement() {
               </div>
             </div>)}
             
-            {activeTab === 'tasks' && (<div className="px-4 pb-4 space-y-4">
-              <div className="flex justify-end">
+            {activeTab === 'tasks' && (<div className="px-4 pb-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-400">共 {tasks.length} 个任务</span>
                 <Button variant="outline" size="sm" className="bg-slate-800 text-slate-300 hover:bg-slate-700" onClick={addTask}>
                   <Plus className="w-4 h-4 mr-1" />
                   添加任务
                 </Button>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {tasks.length === 0 ? (
                   <p className="text-slate-500 text-center py-8">暂无细分任务</p>
                 ) : (
                   tasks.map((task, index) => (
-                    <div key={index} className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-medium text-indigo-400">任务 {index + 1}</span>
-                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 h-6 w-6" onClick={() => removeTask(index)}>
-                          <X className="w-4 h-4" />
-                        </Button>
+                    <div key={index} className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-white truncate">{task.name || '未命名任务'}</span>
+                          <span className={`px-1.5 py-0.5 rounded text-xs ${
+                            task.priority === 'P1' ? 'bg-red-500/10 text-red-400' :
+                            task.priority === 'P2' ? 'bg-orange-500/10 text-orange-400' :
+                            'bg-blue-500/10 text-blue-400'
+                          }`}>{task.priority}</span>
+                          <span className="px-1.5 py-0.5 rounded text-xs bg-green-500/10 text-green-400">{task.status}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <span>负责人：{task.userId ? getUserName(task.userId) : '未分配'}</span>
+                          <span>进度：{task.completedQuantity}/{task.targetQuantity}{task.unit} ({getTaskProgress(task)}%)</span>
+                        </div>
                       </div>
-                      
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">任务名称</label>
-                          <Input
-                            value={task.name}
-                            onChange={(e) => updateTaskField(index, 'name', e.target.value)}
-                            placeholder="请输入任务名称"
-                            className="bg-slate-700 border-slate-600 text-white text-sm"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">任务描述</label>
-                          <Input
-                            value={task.description}
-                            onChange={(e) => updateTaskField(index, 'description', e.target.value)}
-                            placeholder="请输入任务描述"
-                            className="bg-slate-700 border-slate-600 text-white text-sm"
-                          />
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-xs text-slate-500 mb-1">任务类型</label>
-                            <select
-                              value={task.type}
-                              onChange={(e) => updateTaskField(index, 'type', e.target.value)}
-                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                            >
-                              <option value="项目任务">项目任务</option>
-                              <option value="日常任务">日常任务</option>
-                              <option value="临时任务">临时任务</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs text-slate-500 mb-1">优先级</label>
-                            <select
-                              value={task.priority}
-                              onChange={(e) => updateTaskField(index, 'priority', e.target.value)}
-                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                            >
-                              <option value="P1">P1 - 紧急</option>
-                              <option value="P2">P2 - 重要</option>
-                              <option value="P3">P3 - 一般</option>
-                            </select>
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-xs text-slate-500 mb-1">状态</label>
-                            <select
-                              value={task.status}
-                              onChange={(e) => updateTaskField(index, 'status', e.target.value)}
-                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                            >
-                              <option value="进行中">进行中</option>
-                              <option value="已完成">已完成</option>
-                              <option value="待修改">待修改</option>
-                              <option value="已延期">已延期</option>
-                              <option value="待评审">待评审</option>
-                              <option value="已评审">已评审</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs text-slate-500 mb-1">负责人</label>
-                            <select
-                              value={task.userId}
-                              onChange={(e) => updateTaskField(index, 'userId', e.target.value)}
-                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                            >
-                              <option value="">请选择负责人</option>
-                              {users.map((user) => (
-                                <option key={user.id} value={user.id}>{user.nickname}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-xs text-slate-500 mb-1">开始时间</label>
-                            <input
-                              type="date"
-                              value={task.startTime}
-                              onChange={(e) => updateTaskField(index, 'startTime', e.target.value)}
-                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs text-slate-500 mb-1">结束时间</label>
-                            <input
-                              type="date"
-                              value={task.endTime}
-                              onChange={(e) => updateTaskField(index, 'endTime', e.target.value)}
-                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                            />
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">参与成员</label>
-                          <div className="flex flex-wrap gap-2">
-                            {users.map((user) => (
-                              <button
-                                key={user.id}
-                                onClick={() => {
-                                  const members = task.members || []
-                                  if (members.includes(user.id)) {
-                                    updateTaskField(index, 'members', members.filter((id: number) => id !== user.id))
-                                  } else {
-                                    updateTaskField(index, 'members', [...members, user.id])
-                                  }
-                                }}
-                                className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
-                                  (task.members || []).includes(user.id)
-                                    ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50'
-                                    : 'bg-slate-700 text-slate-400 border-slate-600 hover:border-slate-500'
-                                }`}
-                              >
-                                {user.nickname}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">量化</label>
-                          <div className="grid grid-cols-4 gap-2">
-                            <div>
-                              <span className="text-xs text-slate-500">目标数量</span>
-                              <Input
-                                type="number"
-                                value={task.targetQuantity}
-                                onChange={(e) => updateTaskField(index, 'targetQuantity', parseInt(e.target.value) || 0)}
-                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
-                              />
-                            </div>
-                            <div>
-                              <span className="text-xs text-slate-500">单位</span>
-                              <Input
-                                value={task.unit}
-                                onChange={(e) => updateTaskField(index, 'unit', e.target.value)}
-                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
-                                placeholder="个"
-                              />
-                            </div>
-                            <div>
-                              <span className="text-xs text-slate-500">已完成</span>
-                              <Input
-                                type="number"
-                                value={task.completedQuantity}
-                                onChange={(e) => updateTaskField(index, 'completedQuantity', parseInt(e.target.value) || 0)}
-                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
-                              />
-                            </div>
-                            <div>
-                              <span className="text-xs text-slate-500">工时/单位</span>
-                              <Input
-                                type="number"
-                                value={task.hoursPerUnit}
-                                onChange={(e) => updateTaskField(index, 'hoursPerUnit', parseFloat(e.target.value) || 0)}
-                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
-                              />
-                            </div>
-                          </div>
-                        </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 h-7 w-7" onClick={() => openEditTask(index)}>
+                          <Edit className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 h-7 w-7" onClick={() => removeTask(index)}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                     </div>
                   ))
@@ -1074,6 +859,177 @@ export default function ProjectManagement() {
           <DialogFooter className="px-4 py-3 mx-0 mb-0">
             <Button variant="outline" className="bg-slate-800 text-slate-300 hover:bg-slate-700" onClick={() => { setShowEditDialog(false); setEditingProjectId(null); setTasks([]); }}>取消</Button>
             <Button className="bg-indigo-600 hover:bg-indigo-500 text-white" onClick={handleUpdate}>保存</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showTaskDialog} onOpenChange={setShowTaskDialog}>
+        <DialogContent className="bg-slate-900 border-slate-700 max-w-md top-8 translate-y-0">
+          <DialogHeader>
+            <DialogTitle className="text-white">{taskDialogMode === 'add' ? '添加任务' : '编辑任务'}</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">任务名称</label>
+              <Input
+                value={taskFormData.name}
+                onChange={(e) => setTaskFormData({ ...taskFormData, name: e.target.value })}
+                placeholder="请输入任务名称"
+                className="bg-slate-700 border-slate-600 text-white text-sm"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">任务描述</label>
+              <Input
+                value={taskFormData.description}
+                onChange={(e) => setTaskFormData({ ...taskFormData, description: e.target.value })}
+                placeholder="请输入任务描述"
+                className="bg-slate-700 border-slate-600 text-white text-sm"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">优先级</label>
+                <select
+                  value={taskFormData.priority}
+                  onChange={(e) => setTaskFormData({ ...taskFormData, priority: e.target.value })}
+                  className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="P1">P1 - 紧急</option>
+                  <option value="P2">P2 - 重要</option>
+                  <option value="P3">P3 - 一般</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">状态</label>
+                <select
+                  value={taskFormData.status}
+                  onChange={(e) => setTaskFormData({ ...taskFormData, status: e.target.value })}
+                  className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="进行中">进行中</option>
+                  <option value="已完成">已完成</option>
+                  <option value="待修改">待修改</option>
+                  <option value="已延期">已延期</option>
+                  <option value="待评审">待评审</option>
+                  <option value="已评审">已评审</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">负责人</label>
+                <select
+                  value={taskFormData.userId}
+                  onChange={(e) => setTaskFormData({ ...taskFormData, userId: e.target.value })}
+                  className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="">请选择负责人</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>{user.nickname}</option>
+                  ))}
+                </select>
+              </div>
+              <div></div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">开始时间</label>
+                <input
+                  type="date"
+                  value={taskFormData.startTime}
+                  onChange={(e) => setTaskFormData({ ...taskFormData, startTime: e.target.value })}
+                  className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">结束时间</label>
+                <input
+                  type="date"
+                  value={taskFormData.endTime}
+                  onChange={(e) => setTaskFormData({ ...taskFormData, endTime: e.target.value })}
+                  className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">参与成员</label>
+              <div className="flex flex-wrap gap-2">
+                {users.filter(u => u.id.toString() !== taskFormData.userId).map((user) => (
+                  <button
+                    key={user.id}
+                    onClick={() => {
+                      const members = taskFormData.members || []
+                      if (members.includes(user.id)) {
+                        setTaskFormData({ ...taskFormData, members: members.filter((id: number) => id !== user.id) })
+                      } else {
+                        setTaskFormData({ ...taskFormData, members: [...members, user.id] })
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
+                      (taskFormData.members || []).includes(user.id)
+                        ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50'
+                        : 'bg-slate-700 text-slate-400 border-slate-600 hover:border-slate-500'
+                    }`}
+                  >
+                    {user.nickname}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">量化</label>
+              <div className="grid grid-cols-4 gap-2">
+                <div>
+                  <span className="text-xs text-slate-500">目标数量</span>
+                  <Input
+                    type="number"
+                    value={taskFormData.targetQuantity}
+                    onChange={(e) => setTaskFormData({ ...taskFormData, targetQuantity: parseInt(e.target.value) || 0 })}
+                    className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
+                  />
+                </div>
+                <div>
+                  <span className="text-xs text-slate-500">单位</span>
+                  <Input
+                    value={taskFormData.unit}
+                    onChange={(e) => setTaskFormData({ ...taskFormData, unit: e.target.value })}
+                    className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
+                    placeholder="个"
+                  />
+                </div>
+                <div>
+                  <span className="text-xs text-slate-500">已完成</span>
+                  <Input
+                    type="number"
+                    value={taskFormData.completedQuantity}
+                    onChange={(e) => setTaskFormData({ ...taskFormData, completedQuantity: parseInt(e.target.value) || 0 })}
+                    className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
+                  />
+                </div>
+                <div>
+                  <span className="text-xs text-slate-500">工时/单位</span>
+                  <Input
+                    type="number"
+                    value={taskFormData.hoursPerUnit}
+                    onChange={(e) => setTaskFormData({ ...taskFormData, hoursPerUnit: parseFloat(e.target.value) || 0 })}
+                    className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter className="px-0 py-0 mx-0 mb-0">
+            <Button variant="outline" className="bg-slate-800 text-slate-300 hover:bg-slate-700" onClick={() => setShowTaskDialog(false)}>取消</Button>
+            <Button className="bg-indigo-600 hover:bg-indigo-500 text-white" onClick={saveTaskDialog}>确定</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

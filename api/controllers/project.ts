@@ -57,8 +57,9 @@ export async function createProject(req: Request, res: Response) {
     })
     
     if (members && members.length > 0) {
+      const uniqueMembers = [...new Set(members)]
       await prisma.projectMember.createMany({
-        data: members.map((userId: number) => ({
+        data: uniqueMembers.map((userId: number) => ({
           projectId: project.id,
           userId,
           isManager: userId === managerId
@@ -108,9 +109,10 @@ export async function updateProject(req: Request, res: Response) {
     
     if (members !== undefined) {
       await prisma.projectMember.deleteMany({ where: { projectId: parseInt(id) } })
-      if (members.length > 0) {
+      const uniqueMembers = [...new Set(members)]
+      if (uniqueMembers.length > 0) {
         await prisma.projectMember.createMany({
-          data: members.map((userId: number) => ({
+          data: uniqueMembers.map((userId: number) => ({
             projectId: parseInt(id),
             userId,
             isManager: userId === managerId
