@@ -84,6 +84,10 @@ model Project {
   isArchived  Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  description String?
+  icon        String?
+  startTime   String?
+  endTime     String?
   
   manager     User      @relation("ProjectManager", fields: [managerId], references: [id])
   tasks       Task[]

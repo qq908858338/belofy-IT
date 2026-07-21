@@ -1,18 +1,16 @@
-﻿import { useState, useEffect } from 'react'
+﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Popconfirm } from '@/components/ui/popconfirm'
-import { Progress } from '@/components/ui/progress'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
-import { Plus, Edit, Trash2, CheckCircle2, Rocket, Code, Target, Globe, Building2, Users, Star, BookOpen, X } from 'lucide-react'
+import { Plus, Edit, Trash2, Rocket, Code, Target, Globe, Building2, Users, Star, BookOpen, X } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useProjectStore } from '@/store/projectStore'
 import { getProjects, deleteProject, createProject, updateProject } from '@/api/project'
 import { getUsers } from '@/api/user'
-import { getTasks, createTask, updateTask, deleteTask } from '@/api/task'
+import { getTasks, createTask, updateTask } from '@/api/task'
 import type { Project } from '@/types'
 
 export default function ProjectManagement() {
@@ -110,14 +108,8 @@ export default function ProjectManagement() {
         ...formData,
         managerId: parseInt(formData.managerId),
         status: formData.status || '待立项',
+        members: [...selectedMembers, parseInt(formData.managerId)],
       })
-
-      if (selectedMembers.length > 0) {
-        for (const memberId of selectedMembers) {
-          if (memberId !== parseInt(formData.managerId)) {
-          }
-        }
-      }
 
       if (tasks.length > 0) {
         for (const task of tasks) {
@@ -171,7 +163,9 @@ export default function ProjectManagement() {
       managerId: project.managerId?.toString() || '',
       status: project.status || '',
     })
-    setSelectedMembers([])
+    
+    const memberIds = (project as any).members?.map((m: any) => m.userId) || []
+    setSelectedMembers(memberIds)
 
     try {
       const projectTasks = await getTasks(token!, { projectId: project.id })
@@ -187,9 +181,9 @@ export default function ProjectManagement() {
         unit: t.unit || '个',
         completedQuantity: t.completedQuantity || 0,
         hoursPerUnit: t.hoursPerUnit || 1,
-        startTime: t.startTime || '',
-        endTime: t.endTime || '',
-        members: (t as any).members || [],
+        startTime: t.startTime ? new Date(t.startTime).toISOString().split('T')[0] : '',
+        endTime: t.endTime ? new Date(t.endTime).toISOString().split('T')[0] : '',
+        members: (t as any).members?.map((m: any) => m.userId) || [],
       })))
     } catch (error) {
       console.error('Failed to fetch project tasks:', error)
@@ -211,6 +205,7 @@ export default function ProjectManagement() {
         ...formData,
         managerId: parseInt(formData.managerId),
         status: formData.status || '待立项',
+        members: [...selectedMembers, parseInt(formData.managerId)],
       })
 
       for (const task of tasks) {
@@ -288,7 +283,7 @@ export default function ProjectManagement() {
     }])
   }
 
-  const updateTask = (index: number, field: string, value: any) => {
+  const updateTaskField = (index: number, field: string, value: any) => {
     setTasks(prev => prev.map((t, i) => 
       i === index ? { ...t, [field]: value } : t
     ))
@@ -563,7 +558,7 @@ export default function ProjectManagement() {
                           <label className="block text-xs text-slate-500 mb-1">任务名称</label>
                           <Input
                             value={task.name}
-                            onChange={(e) => updateTask(index, 'name', e.target.value)}
+                            onChange={(e) => updateTaskField(index, 'name', e.target.value)}
                             placeholder="请输入任务名称"
                             className="bg-slate-700 border-slate-600 text-white text-sm"
                           />
@@ -573,7 +568,7 @@ export default function ProjectManagement() {
                           <label className="block text-xs text-slate-500 mb-1">任务描述</label>
                           <Input
                             value={task.description}
-                            onChange={(e) => updateTask(index, 'description', e.target.value)}
+                            onChange={(e) => updateTaskField(index, 'description', e.target.value)}
                             placeholder="请输入任务描述"
                             className="bg-slate-700 border-slate-600 text-white text-sm"
                           />
@@ -584,7 +579,7 @@ export default function ProjectManagement() {
                             <label className="block text-xs text-slate-500 mb-1">任务类型</label>
                             <select
                               value={task.type}
-                              onChange={(e) => updateTask(index, 'type', e.target.value)}
+                              onChange={(e) => updateTaskField(index, 'type', e.target.value)}
                               className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
                             >
                               <option value="项目任务">项目任务</option>
@@ -596,7 +591,7 @@ export default function ProjectManagement() {
                             <label className="block text-xs text-slate-500 mb-1">优先级</label>
                             <select
                               value={task.priority}
-                              onChange={(e) => updateTask(index, 'priority', e.target.value)}
+                              onChange={(e) => updateTaskField(index, 'priority', e.target.value)}
                               className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
                             >
                               <option value="P1">P1 - 紧急</option>
@@ -611,7 +606,7 @@ export default function ProjectManagement() {
                             <label className="block text-xs text-slate-500 mb-1">状态</label>
                             <select
                               value={task.status}
-                              onChange={(e) => updateTask(index, 'status', e.target.value)}
+                              onChange={(e) => updateTaskField(index, 'status', e.target.value)}
                               className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
                             >
                               <option value="进行中">进行中</option>
@@ -626,7 +621,7 @@ export default function ProjectManagement() {
                             <label className="block text-xs text-slate-500 mb-1">负责人</label>
                             <select
                               value={task.userId}
-                              onChange={(e) => updateTask(index, 'userId', e.target.value)}
+                              onChange={(e) => updateTaskField(index, 'userId', e.target.value)}
                               className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
                             >
                               <option value="">请选择负责人</option>
@@ -643,7 +638,7 @@ export default function ProjectManagement() {
                             <input
                               type="date"
                               value={task.startTime}
-                              onChange={(e) => updateTask(index, 'startTime', e.target.value)}
+                              onChange={(e) => updateTaskField(index, 'startTime', e.target.value)}
                               className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
                             />
                           </div>
@@ -652,7 +647,7 @@ export default function ProjectManagement() {
                             <input
                               type="date"
                               value={task.endTime}
-                              onChange={(e) => updateTask(index, 'endTime', e.target.value)}
+                              onChange={(e) => updateTaskField(index, 'endTime', e.target.value)}
                               className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
                             />
                           </div>
@@ -667,9 +662,9 @@ export default function ProjectManagement() {
                                 onClick={() => {
                                   const members = task.members || []
                                   if (members.includes(user.id)) {
-                                    updateTask(index, 'members', members.filter((id: number) => id !== user.id))
+                                    updateTaskField(index, 'members', members.filter((id: number) => id !== user.id))
                                   } else {
-                                    updateTask(index, 'members', [...members, user.id])
+                                    updateTaskField(index, 'members', [...members, user.id])
                                   }
                                 }}
                                 className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
@@ -692,7 +687,7 @@ export default function ProjectManagement() {
                               <Input
                                 type="number"
                                 value={task.targetQuantity}
-                                onChange={(e) => updateTask(index, 'targetQuantity', parseInt(e.target.value) || 0)}
+                                onChange={(e) => updateTaskField(index, 'targetQuantity', parseInt(e.target.value) || 0)}
                                 className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
                               />
                             </div>
@@ -700,7 +695,7 @@ export default function ProjectManagement() {
                               <span className="text-xs text-slate-500">单位</span>
                               <Input
                                 value={task.unit}
-                                onChange={(e) => updateTask(index, 'unit', e.target.value)}
+                                onChange={(e) => updateTaskField(index, 'unit', e.target.value)}
                                 className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
                                 placeholder="个"
                               />
@@ -710,7 +705,7 @@ export default function ProjectManagement() {
                               <Input
                                 type="number"
                                 value={task.completedQuantity}
-                                onChange={(e) => updateTask(index, 'completedQuantity', parseInt(e.target.value) || 0)}
+                                onChange={(e) => updateTaskField(index, 'completedQuantity', parseInt(e.target.value) || 0)}
                                 className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
                               />
                             </div>
@@ -719,7 +714,7 @@ export default function ProjectManagement() {
                               <Input
                                 type="number"
                                 value={task.hoursPerUnit}
-                                onChange={(e) => updateTask(index, 'hoursPerUnit', parseFloat(e.target.value) || 0)}
+                                onChange={(e) => updateTaskField(index, 'hoursPerUnit', parseFloat(e.target.value) || 0)}
                                 className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
                               />
                             </div>
@@ -906,7 +901,7 @@ export default function ProjectManagement() {
                           <label className="block text-xs text-slate-500 mb-1">任务名称</label>
                           <Input
                             value={task.name}
-                            onChange={(e) => updateTask(index, 'name', e.target.value)}
+                            onChange={(e) => updateTaskField(index, 'name', e.target.value)}
                             placeholder="请输入任务名称"
                             className="bg-slate-700 border-slate-600 text-white text-sm"
                           />
@@ -916,7 +911,7 @@ export default function ProjectManagement() {
                           <label className="block text-xs text-slate-500 mb-1">任务描述</label>
                           <Input
                             value={task.description}
-                            onChange={(e) => updateTask(index, 'description', e.target.value)}
+                            onChange={(e) => updateTaskField(index, 'description', e.target.value)}
                             placeholder="请输入任务描述"
                             className="bg-slate-700 border-slate-600 text-white text-sm"
                           />
@@ -927,7 +922,7 @@ export default function ProjectManagement() {
                             <label className="block text-xs text-slate-500 mb-1">任务类型</label>
                             <select
                               value={task.type}
-                              onChange={(e) => updateTask(index, 'type', e.target.value)}
+                              onChange={(e) => updateTaskField(index, 'type', e.target.value)}
                               className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
                             >
                               <option value="项目任务">项目任务</option>
@@ -939,7 +934,7 @@ export default function ProjectManagement() {
                             <label className="block text-xs text-slate-500 mb-1">优先级</label>
                             <select
                               value={task.priority}
-                              onChange={(e) => updateTask(index, 'priority', e.target.value)}
+                              onChange={(e) => updateTaskField(index, 'priority', e.target.value)}
                               className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
                             >
                               <option value="P1">P1 - 紧急</option>
@@ -954,7 +949,7 @@ export default function ProjectManagement() {
                             <label className="block text-xs text-slate-500 mb-1">状态</label>
                             <select
                               value={task.status}
-                              onChange={(e) => updateTask(index, 'status', e.target.value)}
+                              onChange={(e) => updateTaskField(index, 'status', e.target.value)}
                               className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
                             >
                               <option value="进行中">进行中</option>
@@ -969,7 +964,7 @@ export default function ProjectManagement() {
                             <label className="block text-xs text-slate-500 mb-1">负责人</label>
                             <select
                               value={task.userId}
-                              onChange={(e) => updateTask(index, 'userId', e.target.value)}
+                              onChange={(e) => updateTaskField(index, 'userId', e.target.value)}
                               className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
                             >
                               <option value="">请选择负责人</option>
@@ -986,7 +981,7 @@ export default function ProjectManagement() {
                             <input
                               type="date"
                               value={task.startTime}
-                              onChange={(e) => updateTask(index, 'startTime', e.target.value)}
+                              onChange={(e) => updateTaskField(index, 'startTime', e.target.value)}
                               className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
                             />
                           </div>
@@ -995,7 +990,7 @@ export default function ProjectManagement() {
                             <input
                               type="date"
                               value={task.endTime}
-                              onChange={(e) => updateTask(index, 'endTime', e.target.value)}
+                              onChange={(e) => updateTaskField(index, 'endTime', e.target.value)}
                               className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
                             />
                           </div>
@@ -1010,9 +1005,9 @@ export default function ProjectManagement() {
                                 onClick={() => {
                                   const members = task.members || []
                                   if (members.includes(user.id)) {
-                                    updateTask(index, 'members', members.filter((id: number) => id !== user.id))
+                                    updateTaskField(index, 'members', members.filter((id: number) => id !== user.id))
                                   } else {
-                                    updateTask(index, 'members', [...members, user.id])
+                                    updateTaskField(index, 'members', [...members, user.id])
                                   }
                                 }}
                                 className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
@@ -1035,7 +1030,7 @@ export default function ProjectManagement() {
                               <Input
                                 type="number"
                                 value={task.targetQuantity}
-                                onChange={(e) => updateTask(index, 'targetQuantity', parseInt(e.target.value) || 0)}
+                                onChange={(e) => updateTaskField(index, 'targetQuantity', parseInt(e.target.value) || 0)}
                                 className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
                               />
                             </div>
@@ -1043,7 +1038,7 @@ export default function ProjectManagement() {
                               <span className="text-xs text-slate-500">单位</span>
                               <Input
                                 value={task.unit}
-                                onChange={(e) => updateTask(index, 'unit', e.target.value)}
+                                onChange={(e) => updateTaskField(index, 'unit', e.target.value)}
                                 className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
                                 placeholder="个"
                               />
@@ -1053,7 +1048,7 @@ export default function ProjectManagement() {
                               <Input
                                 type="number"
                                 value={task.completedQuantity}
-                                onChange={(e) => updateTask(index, 'completedQuantity', parseInt(e.target.value) || 0)}
+                                onChange={(e) => updateTaskField(index, 'completedQuantity', parseInt(e.target.value) || 0)}
                                 className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
                               />
                             </div>
@@ -1062,7 +1057,7 @@ export default function ProjectManagement() {
                               <Input
                                 type="number"
                                 value={task.hoursPerUnit}
-                                onChange={(e) => updateTask(index, 'hoursPerUnit', parseFloat(e.target.value) || 0)}
+                                onChange={(e) => updateTaskField(index, 'hoursPerUnit', parseFloat(e.target.value) || 0)}
                                 className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
                               />
                             </div>

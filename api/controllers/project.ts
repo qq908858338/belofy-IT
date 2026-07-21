@@ -38,13 +38,21 @@ export async function getProjects(req: Request, res: Response) {
 
 export async function createProject(req: Request, res: Response) {
   try {
-    const { name, status, managerId, members } = req.body
+    const { name, description, icon, startTime, endTime, status, managerId, members } = req.body
     
     const project = await prisma.project.create({
       data: {
         name,
+        description: description || undefined,
+        icon: icon || undefined,
+        startTime: startTime || undefined,
+        endTime: endTime || undefined,
         status,
         managerId
+      },
+      include: {
+        manager: true,
+        members: { include: { user: true } }
       }
     })
     
@@ -58,22 +66,44 @@ export async function createProject(req: Request, res: Response) {
       })
     }
     
-    res.status(201).json(project)
-  } catch (error) {
-    res.status(500).json({ message: '服务器内部错误' })
+    const projectWithMembers = await prisma.project.findUnique({
+      where: { id: project.id },
+      include: {
+        manager: true,
+        members: { include: { user: true } }
+      }
+    })
+    
+    res.status(201).json(projectWithMembers)
+  } catch (error: any) {
+    console.error('createProject error:', error.message || error)
+    res.status(500).json({ message: '服务器内部错误', detail: error.message })
   }
 }
 
 export async function updateProject(req: Request, res: Response) {
   try {
     const { id } = req.params
-    const { name, status, managerId, isArchived, members } = req.body
+    const { name, description, icon, startTime, endTime, status, managerId, isArchived, members } = req.body
     
-    const data: any = { name, status, managerId, isArchived }
+    const data: any = { 
+      name, 
+      status, 
+      isArchived,
+      description: description || undefined,
+      icon: icon || undefined,
+      startTime: startTime || undefined,
+      endTime: endTime || undefined,
+      manager: managerId ? { connect: { id: managerId } } : undefined,
+    }
     
     const project = await prisma.project.update({
       where: { id: parseInt(id) },
-      data
+      data,
+      include: {
+        manager: true,
+        members: { include: { user: true } }
+      }
     })
     
     if (members !== undefined) {
@@ -89,12 +119,21 @@ export async function updateProject(req: Request, res: Response) {
       }
     }
     
-    res.json(project)
+    const projectWithMembers = await prisma.project.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        manager: true,
+        members: { include: { user: true } }
+      }
+    })
+    
+    res.json(projectWithMembers)
   } catch (error: any) {
     if (error.code === 'P2025') {
       res.status(404).json({ message: '项目不存在' })
     } else {
-      res.status(500).json({ message: '服务器内部错误' })
+      console.error('updateProject error:', error.message || error)
+      res.status(500).json({ message: '服务器内部错误', detail: error.message })
     }
   }
 }

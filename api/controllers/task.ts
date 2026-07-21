@@ -43,8 +43,9 @@ export async function getTasks(req: Request, res: Response) {
         } : null
       }))
     })))
-  } catch (error) {
-    res.status(500).json({ message: '服务器内部错误' })
+  } catch (error: any) {
+    console.error('getTasks error:', error.message || error)
+    res.status(500).json({ message: '服务器内部错误', detail: error.message })
   }
 }
 
@@ -77,8 +78,9 @@ export async function createTask(req: Request, res: Response) {
     }
     
     res.status(201).json(task)
-  } catch (error) {
-    res.status(500).json({ message: '服务器内部错误' })
+  } catch (error: any) {
+    console.error('createTask error:', error.message || error)
+    res.status(500).json({ message: '服务器内部错误', detail: error.message })
   }
 }
 

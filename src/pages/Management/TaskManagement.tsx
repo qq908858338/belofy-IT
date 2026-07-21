@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +10,7 @@ import { Plus, Edit, Trash2 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useTaskStore } from '@/store/taskStore'
 import { getTasks, deleteTask, createTask, updateTask } from '@/api/task'
-import { getUsers, getDepartments } from '@/api/user'
+import { getUsers } from '@/api/user'
 import { getProjects } from '@/api/project'
 import type { Task } from '@/types'
 
@@ -19,7 +19,6 @@ export default function TaskManagement() {
   const [taskTypeFilter, setTaskTypeFilter] = useState<string>('all')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [users, setUsers] = useState<any[]>([])
-  const [departments, setDepartments] = useState<any[]>([])
   const [projects, setProjects] = useState<any[]>([])
   
   const { token } = useAuthStore()
@@ -47,7 +46,6 @@ export default function TaskManagement() {
   useEffect(() => {
     fetchTasks()
     fetchUsers()
-    fetchDepartments()
     fetchProjects()
   }, [])
 
@@ -69,15 +67,6 @@ export default function TaskManagement() {
       setUsers(usersData)
     } catch (error) {
       console.error('Failed to fetch users:', error)
-    }
-  }
-
-  const fetchDepartments = async () => {
-    try {
-      const deptsData = await getDepartments(token!)
-      setDepartments(deptsData)
-    } catch (error) {
-      console.error('Failed to fetch departments:', error)
     }
   }
 

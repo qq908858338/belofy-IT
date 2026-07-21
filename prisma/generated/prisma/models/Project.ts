@@ -44,6 +44,10 @@ export type ProjectMinAggregateOutputType = {
   isArchived: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
+  description: string | null
+  icon: string | null
+  startTime: string | null
+  endTime: string | null
 }
 
 export type ProjectMaxAggregateOutputType = {
@@ -54,6 +58,10 @@ export type ProjectMaxAggregateOutputType = {
   isArchived: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
+  description: string | null
+  icon: string | null
+  startTime: string | null
+  endTime: string | null
 }
 
 export type ProjectCountAggregateOutputType = {
@@ -64,6 +72,10 @@ export type ProjectCountAggregateOutputType = {
   isArchived: number
   createdAt: number
   updatedAt: number
+  description: number
+  icon: number
+  startTime: number
+  endTime: number
   _all: number
 }
 
@@ -86,6 +98,10 @@ export type ProjectMinAggregateInputType = {
   isArchived?: true
   createdAt?: true
   updatedAt?: true
+  description?: true
+  icon?: true
+  startTime?: true
+  endTime?: true
 }
 
 export type ProjectMaxAggregateInputType = {
@@ -96,6 +112,10 @@ export type ProjectMaxAggregateInputType = {
   isArchived?: true
   createdAt?: true
   updatedAt?: true
+  description?: true
+  icon?: true
+  startTime?: true
+  endTime?: true
 }
 
 export type ProjectCountAggregateInputType = {
@@ -106,6 +126,10 @@ export type ProjectCountAggregateInputType = {
   isArchived?: true
   createdAt?: true
   updatedAt?: true
+  description?: true
+  icon?: true
+  startTime?: true
+  endTime?: true
   _all?: true
 }
 
@@ -203,6 +227,10 @@ export type ProjectGroupByOutputType = {
   isArchived: boolean
   createdAt: Date
   updatedAt: Date
+  description: string | null
+  icon: string | null
+  startTime: string | null
+  endTime: string | null
   _count: ProjectCountAggregateOutputType | null
   _avg: ProjectAvgAggregateOutputType | null
   _sum: ProjectSumAggregateOutputType | null
@@ -236,6 +264,10 @@ export type ProjectWhereInput = {
   isArchived?: Prisma.BoolFilter<"Project"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
+  description?: Prisma.StringNullableFilter<"Project"> | string | null
+  icon?: Prisma.StringNullableFilter<"Project"> | string | null
+  startTime?: Prisma.StringNullableFilter<"Project"> | string | null
+  endTime?: Prisma.StringNullableFilter<"Project"> | string | null
   manager?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   tasks?: Prisma.TaskListRelationFilter
   members?: Prisma.ProjectMemberListRelationFilter
@@ -251,6 +283,10 @@ export type ProjectOrderByWithRelationInput = {
   isArchived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  icon?: Prisma.SortOrderInput | Prisma.SortOrder
+  startTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  endTime?: Prisma.SortOrderInput | Prisma.SortOrder
   manager?: Prisma.UserOrderByWithRelationInput
   tasks?: Prisma.TaskOrderByRelationAggregateInput
   members?: Prisma.ProjectMemberOrderByRelationAggregateInput
@@ -269,6 +305,10 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   isArchived?: Prisma.BoolFilter<"Project"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
+  description?: Prisma.StringNullableFilter<"Project"> | string | null
+  icon?: Prisma.StringNullableFilter<"Project"> | string | null
+  startTime?: Prisma.StringNullableFilter<"Project"> | string | null
+  endTime?: Prisma.StringNullableFilter<"Project"> | string | null
   manager?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   tasks?: Prisma.TaskListRelationFilter
   members?: Prisma.ProjectMemberListRelationFilter
@@ -284,6 +324,10 @@ export type ProjectOrderByWithAggregationInput = {
   isArchived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  icon?: Prisma.SortOrderInput | Prisma.SortOrder
+  startTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  endTime?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ProjectCountOrderByAggregateInput
   _avg?: Prisma.ProjectAvgOrderByAggregateInput
   _max?: Prisma.ProjectMaxOrderByAggregateInput
@@ -302,6 +346,10 @@ export type ProjectScalarWhereWithAggregatesInput = {
   isArchived?: Prisma.BoolWithAggregatesFilter<"Project"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
+  description?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
+  icon?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
+  startTime?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
+  endTime?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
 }
 
 export type ProjectCreateInput = {
@@ -310,6 +358,10 @@ export type ProjectCreateInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
   manager: Prisma.UserCreateNestedOneWithoutProjectsInput
   tasks?: Prisma.TaskCreateNestedManyWithoutProjectInput
   members?: Prisma.ProjectMemberCreateNestedManyWithoutProjectInput
@@ -325,6 +377,10 @@ export type ProjectUncheckedCreateInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProjectInput
   members?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutProjectInput
@@ -337,6 +393,10 @@ export type ProjectUpdateInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manager?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   tasks?: Prisma.TaskUpdateManyWithoutProjectNestedInput
   members?: Prisma.ProjectMemberUpdateManyWithoutProjectNestedInput
@@ -352,6 +412,10 @@ export type ProjectUncheckedUpdateInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProjectNestedInput
   members?: Prisma.ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutProjectNestedInput
@@ -366,6 +430,10 @@ export type ProjectCreateManyInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
 }
 
 export type ProjectUpdateManyMutationInput = {
@@ -374,6 +442,10 @@ export type ProjectUpdateManyMutationInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ProjectUncheckedUpdateManyInput = {
@@ -384,6 +456,10 @@ export type ProjectUncheckedUpdateManyInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ProjectListRelationFilter = {
@@ -409,6 +485,10 @@ export type ProjectCountOrderByAggregateInput = {
   isArchived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  icon?: Prisma.SortOrder
+  startTime?: Prisma.SortOrder
+  endTime?: Prisma.SortOrder
 }
 
 export type ProjectAvgOrderByAggregateInput = {
@@ -424,6 +504,10 @@ export type ProjectMaxOrderByAggregateInput = {
   isArchived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  icon?: Prisma.SortOrder
+  startTime?: Prisma.SortOrder
+  endTime?: Prisma.SortOrder
 }
 
 export type ProjectMinOrderByAggregateInput = {
@@ -434,6 +518,10 @@ export type ProjectMinOrderByAggregateInput = {
   isArchived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  icon?: Prisma.SortOrder
+  startTime?: Prisma.SortOrder
+  endTime?: Prisma.SortOrder
 }
 
 export type ProjectSumOrderByAggregateInput = {
@@ -556,6 +644,10 @@ export type ProjectCreateWithoutManagerInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
   tasks?: Prisma.TaskCreateNestedManyWithoutProjectInput
   members?: Prisma.ProjectMemberCreateNestedManyWithoutProjectInput
   achievements?: Prisma.AchievementCreateNestedManyWithoutProjectInput
@@ -569,6 +661,10 @@ export type ProjectUncheckedCreateWithoutManagerInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProjectInput
   members?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutProjectInput
@@ -611,6 +707,10 @@ export type ProjectScalarWhereInput = {
   isArchived?: Prisma.BoolFilter<"Project"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
+  description?: Prisma.StringNullableFilter<"Project"> | string | null
+  icon?: Prisma.StringNullableFilter<"Project"> | string | null
+  startTime?: Prisma.StringNullableFilter<"Project"> | string | null
+  endTime?: Prisma.StringNullableFilter<"Project"> | string | null
 }
 
 export type ProjectCreateWithoutTasksInput = {
@@ -619,6 +719,10 @@ export type ProjectCreateWithoutTasksInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
   manager: Prisma.UserCreateNestedOneWithoutProjectsInput
   members?: Prisma.ProjectMemberCreateNestedManyWithoutProjectInput
   achievements?: Prisma.AchievementCreateNestedManyWithoutProjectInput
@@ -633,6 +737,10 @@ export type ProjectUncheckedCreateWithoutTasksInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
   members?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutProjectInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProjectInput
@@ -660,6 +768,10 @@ export type ProjectUpdateWithoutTasksInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manager?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   members?: Prisma.ProjectMemberUpdateManyWithoutProjectNestedInput
   achievements?: Prisma.AchievementUpdateManyWithoutProjectNestedInput
@@ -674,6 +786,10 @@ export type ProjectUncheckedUpdateWithoutTasksInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   members?: Prisma.ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutProjectNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProjectNestedInput
@@ -685,6 +801,10 @@ export type ProjectCreateWithoutMembersInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
   manager: Prisma.UserCreateNestedOneWithoutProjectsInput
   tasks?: Prisma.TaskCreateNestedManyWithoutProjectInput
   achievements?: Prisma.AchievementCreateNestedManyWithoutProjectInput
@@ -699,6 +819,10 @@ export type ProjectUncheckedCreateWithoutMembersInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProjectInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutProjectInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProjectInput
@@ -726,6 +850,10 @@ export type ProjectUpdateWithoutMembersInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manager?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   tasks?: Prisma.TaskUpdateManyWithoutProjectNestedInput
   achievements?: Prisma.AchievementUpdateManyWithoutProjectNestedInput
@@ -740,6 +868,10 @@ export type ProjectUncheckedUpdateWithoutMembersInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProjectNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutProjectNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProjectNestedInput
@@ -751,6 +883,10 @@ export type ProjectCreateWithoutReviewsInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
   manager: Prisma.UserCreateNestedOneWithoutProjectsInput
   tasks?: Prisma.TaskCreateNestedManyWithoutProjectInput
   members?: Prisma.ProjectMemberCreateNestedManyWithoutProjectInput
@@ -765,6 +901,10 @@ export type ProjectUncheckedCreateWithoutReviewsInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProjectInput
   members?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutProjectInput
@@ -792,6 +932,10 @@ export type ProjectUpdateWithoutReviewsInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manager?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   tasks?: Prisma.TaskUpdateManyWithoutProjectNestedInput
   members?: Prisma.ProjectMemberUpdateManyWithoutProjectNestedInput
@@ -806,6 +950,10 @@ export type ProjectUncheckedUpdateWithoutReviewsInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProjectNestedInput
   members?: Prisma.ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutProjectNestedInput
@@ -817,6 +965,10 @@ export type ProjectCreateWithoutAchievementsInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
   manager: Prisma.UserCreateNestedOneWithoutProjectsInput
   tasks?: Prisma.TaskCreateNestedManyWithoutProjectInput
   members?: Prisma.ProjectMemberCreateNestedManyWithoutProjectInput
@@ -831,6 +983,10 @@ export type ProjectUncheckedCreateWithoutAchievementsInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProjectInput
   members?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProjectInput
@@ -858,6 +1014,10 @@ export type ProjectUpdateWithoutAchievementsInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manager?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   tasks?: Prisma.TaskUpdateManyWithoutProjectNestedInput
   members?: Prisma.ProjectMemberUpdateManyWithoutProjectNestedInput
@@ -872,6 +1032,10 @@ export type ProjectUncheckedUpdateWithoutAchievementsInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProjectNestedInput
   members?: Prisma.ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProjectNestedInput
@@ -884,6 +1048,10 @@ export type ProjectCreateManyManagerInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  description?: string | null
+  icon?: string | null
+  startTime?: string | null
+  endTime?: string | null
 }
 
 export type ProjectUpdateWithoutManagerInput = {
@@ -892,6 +1060,10 @@ export type ProjectUpdateWithoutManagerInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tasks?: Prisma.TaskUpdateManyWithoutProjectNestedInput
   members?: Prisma.ProjectMemberUpdateManyWithoutProjectNestedInput
   achievements?: Prisma.AchievementUpdateManyWithoutProjectNestedInput
@@ -905,6 +1077,10 @@ export type ProjectUncheckedUpdateWithoutManagerInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProjectNestedInput
   members?: Prisma.ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutProjectNestedInput
@@ -918,6 +1094,10 @@ export type ProjectUncheckedUpdateManyWithoutManagerInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -986,6 +1166,10 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   isArchived?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  description?: boolean
+  icon?: boolean
+  startTime?: boolean
+  endTime?: boolean
   manager?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   tasks?: boolean | Prisma.Project$tasksArgs<ExtArgs>
   members?: boolean | Prisma.Project$membersArgs<ExtArgs>
@@ -1002,6 +1186,10 @@ export type ProjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   isArchived?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  description?: boolean
+  icon?: boolean
+  startTime?: boolean
+  endTime?: boolean
   manager?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -1013,6 +1201,10 @@ export type ProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   isArchived?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  description?: boolean
+  icon?: boolean
+  startTime?: boolean
+  endTime?: boolean
   manager?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -1024,9 +1216,13 @@ export type ProjectSelectScalar = {
   isArchived?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  description?: boolean
+  icon?: boolean
+  startTime?: boolean
+  endTime?: boolean
 }
 
-export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "status" | "managerId" | "isArchived" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
+export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "status" | "managerId" | "isArchived" | "createdAt" | "updatedAt" | "description" | "icon" | "startTime" | "endTime", ExtArgs["result"]["project"]>
 export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   manager?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   tasks?: boolean | Prisma.Project$tasksArgs<ExtArgs>
@@ -1059,6 +1255,10 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     isArchived: boolean
     createdAt: Date
     updatedAt: Date
+    description: string | null
+    icon: string | null
+    startTime: string | null
+    endTime: string | null
   }, ExtArgs["result"]["project"]>
   composites: {}
 }
@@ -1494,6 +1694,10 @@ export interface ProjectFieldRefs {
   readonly isArchived: Prisma.FieldRef<"Project", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Project", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Project", 'DateTime'>
+  readonly description: Prisma.FieldRef<"Project", 'String'>
+  readonly icon: Prisma.FieldRef<"Project", 'String'>
+  readonly startTime: Prisma.FieldRef<"Project", 'String'>
+  readonly endTime: Prisma.FieldRef<"Project", 'String'>
 }
     
 

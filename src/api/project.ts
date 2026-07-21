@@ -18,7 +18,7 @@ export async function createProject(token: string, data: Omit<Project, 'id' | 'c
   return response.data
 }
 
-export async function updateProject(token: string, id: number, data: Partial<Project> & { members?: number[] }): Promise<Project> {
+export async function updateProject(token: string, id: number, data: Omit<Partial<Project>, 'members'> & { members?: number[] }): Promise<Project> {
   const response = await axios.put(`${API_BASE_URL}/projects/${id}`, data, {
     headers: { Authorization: `Bearer ${token}` }
   })
