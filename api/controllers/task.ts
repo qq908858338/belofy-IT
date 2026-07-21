@@ -62,8 +62,8 @@ export async function createTask(req: Request, res: Response) {
         unit,
         completedQuantity: 0,
         hoursPerUnit,
-        startTime: new Date(startTime),
-        endTime: new Date(endTime),
+        startTime: startTime ? new Date(startTime) : undefined,
+        endTime: endTime ? new Date(endTime) : undefined,
         description,
         projectId: projectId || undefined,
         userId

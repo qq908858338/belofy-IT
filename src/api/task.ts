@@ -11,7 +11,7 @@ export async function getTasks(token: string, params?: { userId?: number; type?:
   return response.data
 }
 
-export async function createTask(token: string, data: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'isArchived'>> & { name: string; userId: number; targetQuantity: number }): Promise<Task> {
+export async function createTask(token: string, data: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'isArchived'>> & { name: string; userId: number; targetQuantity: number; projectId?: number; members?: number[] }): Promise<Task> {
   const response = await axios.post(`${API_BASE_URL}/tasks`, data, {
     headers: { Authorization: `Bearer ${token}` }
   })

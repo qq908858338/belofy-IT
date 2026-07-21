@@ -12,7 +12,7 @@ import { useAuthStore } from '@/store/authStore'
 import { useProjectStore } from '@/store/projectStore'
 import { getProjects, deleteProject, createProject, updateProject } from '@/api/project'
 import { getUsers } from '@/api/user'
-import { getTasks } from '@/api/task'
+import { getTasks, createTask, updateTask, deleteTask } from '@/api/task'
 import type { Project } from '@/types'
 
 export default function ProjectManagement() {
@@ -51,6 +51,7 @@ export default function ProjectManagement() {
     hoursPerUnit: number
     startTime: string
     endTime: string
+    members: number[]
   }[]>([])
 
   const iconOptions = [
@@ -121,6 +122,22 @@ export default function ProjectManagement() {
       if (tasks.length > 0) {
         for (const task of tasks) {
           if (task.name && task.userId) {
+            await createTask(token!, {
+              name: task.name,
+              description: task.description,
+              type: task.type,
+              priority: task.priority,
+              status: task.status,
+              userId: parseInt(task.userId),
+              targetQuantity: task.targetQuantity,
+              unit: task.unit,
+              completedQuantity: task.completedQuantity,
+              hoursPerUnit: task.hoursPerUnit,
+              startTime: task.startTime || undefined,
+              endTime: task.endTime || undefined,
+              projectId: projectData.id,
+              members: task.members,
+            })
           }
         }
       }
@@ -162,16 +179,17 @@ export default function ProjectManagement() {
         id: t.id,
         name: t.name,
         description: t.description || '',
-        type: t.type || '',
-        priority: t.priority || '',
-        status: t.status || '',
+        type: t.type || '项目任务',
+        priority: t.priority || 'P2',
+        status: t.status || '进行中',
         userId: t.userId?.toString() || '',
-        targetQuantity: t.targetQuantity || 0,
-        unit: t.unit || '',
+        targetQuantity: t.targetQuantity || 100,
+        unit: t.unit || '个',
         completedQuantity: t.completedQuantity || 0,
-        hoursPerUnit: t.hoursPerUnit || 0,
+        hoursPerUnit: t.hoursPerUnit || 1,
         startTime: t.startTime || '',
         endTime: t.endTime || '',
+        members: (t as any).members || [],
       })))
     } catch (error) {
       console.error('Failed to fetch project tasks:', error)
@@ -195,6 +213,45 @@ export default function ProjectManagement() {
         status: formData.status || '待立项',
       })
 
+      for (const task of tasks) {
+        if (!task.name || !task.userId) continue
+        if (task.id) {
+          await updateTask(token!, task.id, {
+            name: task.name,
+            description: task.description,
+            type: task.type,
+            priority: task.priority,
+            status: task.status,
+            userId: parseInt(task.userId),
+            targetQuantity: task.targetQuantity,
+            unit: task.unit,
+            completedQuantity: task.completedQuantity,
+            hoursPerUnit: task.hoursPerUnit,
+            startTime: task.startTime || undefined,
+            endTime: task.endTime || undefined,
+            projectId: editingProjectId!,
+            members: task.members,
+          } as any)
+        } else {
+          await createTask(token!, {
+            name: task.name,
+            description: task.description,
+            type: task.type,
+            priority: task.priority,
+            status: task.status,
+            userId: parseInt(task.userId),
+            targetQuantity: task.targetQuantity,
+            unit: task.unit,
+            completedQuantity: task.completedQuantity,
+            hoursPerUnit: task.hoursPerUnit,
+            startTime: task.startTime || undefined,
+            endTime: task.endTime || undefined,
+            projectId: editingProjectId!,
+            members: task.members,
+          })
+        }
+      }
+
       setProjects(projects.map(p => p.id === editingProjectId ? projectData : p))
       setShowEditDialog(false)
       setEditingProjectId(null)
@@ -217,16 +274,17 @@ export default function ProjectManagement() {
     setTasks(prev => [...prev, {
       name: '',
       description: '',
-      type: '',
-      priority: '',
-      status: '',
+      type: '项目任务',
+      priority: 'P2',
+      status: '进行中',
       userId: '',
-      targetQuantity: 0,
-      unit: '',
+      targetQuantity: 100,
+      unit: '个',
       completedQuantity: 0,
-      hoursPerUnit: 0,
+      hoursPerUnit: 1,
       startTime: '',
       endTime: '',
+      members: [] as number[],
     }])
   }
 
@@ -340,7 +398,7 @@ export default function ProjectManagement() {
       )}
 
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="bg-slate-900 border-none max-w-2xl p-0 h-[520px] flex flex-col">
+        <DialogContent className="bg-slate-900 border-none max-w-2xl p-0 flex flex-col top-8 translate-y-0">
           <div className="flex">
             <button
               onClick={() => setActiveTab('basic')}
@@ -364,7 +422,7 @@ export default function ProjectManagement() {
             </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 min-h-[400px]">
             {activeTab === 'basic' && (<div className="px-4 space-y-3 pb-2">
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-2">项目名称</label>
@@ -479,9 +537,8 @@ export default function ProjectManagement() {
               </div>
             </div>)}
             
-            {activeTab === 'tasks' && (<div className="space-y-4 mt-4">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-slate-400">细分任务</label>
+            {activeTab === 'tasks' && (<div className="px-4 pb-4 space-y-4">
+              <div className="flex justify-end">
                 <Button variant="outline" size="sm" className="bg-slate-800 text-slate-300 hover:bg-slate-700" onClick={addTask}>
                   <Plus className="w-4 h-4 mr-1" />
                   添加任务
@@ -501,7 +558,7 @@ export default function ProjectManagement() {
                         </Button>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-3">
                         <div>
                           <label className="block text-xs text-slate-500 mb-1">任务名称</label>
                           <Input
@@ -511,104 +568,162 @@ export default function ProjectManagement() {
                             className="bg-slate-700 border-slate-600 text-white text-sm"
                           />
                         </div>
+                        
                         <div>
-                          <label className="block text-xs text-slate-500 mb-1">负责人</label>
-                          <select
-                            value={task.userId}
-                            onChange={(e) => updateTask(index, 'userId', e.target.value)}
-                            className="w-full h-8 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="">请选择负责人</option>
+                          <label className="block text-xs text-slate-500 mb-1">任务描述</label>
+                          <Input
+                            value={task.description}
+                            onChange={(e) => updateTask(index, 'description', e.target.value)}
+                            placeholder="请输入任务描述"
+                            className="bg-slate-700 border-slate-600 text-white text-sm"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">任务类型</label>
+                            <select
+                              value={task.type}
+                              onChange={(e) => updateTask(index, 'type', e.target.value)}
+                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                            >
+                              <option value="项目任务">项目任务</option>
+                              <option value="日常任务">日常任务</option>
+                              <option value="临时任务">临时任务</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">优先级</label>
+                            <select
+                              value={task.priority}
+                              onChange={(e) => updateTask(index, 'priority', e.target.value)}
+                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                            >
+                              <option value="P1">P1 - 紧急</option>
+                              <option value="P2">P2 - 重要</option>
+                              <option value="P3">P3 - 一般</option>
+                            </select>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">状态</label>
+                            <select
+                              value={task.status}
+                              onChange={(e) => updateTask(index, 'status', e.target.value)}
+                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                            >
+                              <option value="进行中">进行中</option>
+                              <option value="已完成">已完成</option>
+                              <option value="待修改">待修改</option>
+                              <option value="已延期">已延期</option>
+                              <option value="待评审">待评审</option>
+                              <option value="已评审">已评审</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">负责人</label>
+                            <select
+                              value={task.userId}
+                              onChange={(e) => updateTask(index, 'userId', e.target.value)}
+                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                            >
+                              <option value="">请选择负责人</option>
+                              {users.map((user) => (
+                                <option key={user.id} value={user.id}>{user.nickname}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">开始时间</label>
+                            <input
+                              type="date"
+                              value={task.startTime}
+                              onChange={(e) => updateTask(index, 'startTime', e.target.value)}
+                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">结束时间</label>
+                            <input
+                              type="date"
+                              value={task.endTime}
+                              onChange={(e) => updateTask(index, 'endTime', e.target.value)}
+                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs text-slate-500 mb-1">参与成员</label>
+                          <div className="flex flex-wrap gap-2">
                             {users.map((user) => (
-                              <option key={user.id} value={user.id}>{user.nickname}</option>
+                              <button
+                                key={user.id}
+                                onClick={() => {
+                                  const members = task.members || []
+                                  if (members.includes(user.id)) {
+                                    updateTask(index, 'members', members.filter((id: number) => id !== user.id))
+                                  } else {
+                                    updateTask(index, 'members', [...members, user.id])
+                                  }
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
+                                  (task.members || []).includes(user.id)
+                                    ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50'
+                                    : 'bg-slate-700 text-slate-400 border-slate-600 hover:border-slate-500'
+                                }`}
+                              >
+                                {user.nickname}
+                              </button>
                             ))}
-                          </select>
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 mt-3">
+                        
                         <div>
-                          <label className="block text-xs text-slate-500 mb-1">类型</label>
-                          <select
-                            value={task.type}
-                            onChange={(e) => updateTask(index, 'type', e.target.value)}
-                            className="w-full h-8 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="项目任务">项目任务</option>
-                            <option value="日常任务">日常任务</option>
-                            <option value="临时任务">临时任务</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">优先级</label>
-                          <select
-                            value={task.priority}
-                            onChange={(e) => updateTask(index, 'priority', e.target.value)}
-                            className="w-full h-8 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="P1">P1 - 紧急</option>
-                            <option value="P2">P2 - 重要</option>
-                            <option value="P3">P3 - 一般</option>
-                          </select>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-4 gap-2 mt-3">
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">目标数量</label>
-                          <Input
-                            type="number"
-                            value={task.targetQuantity}
-                            onChange={(e) => updateTask(index, 'targetQuantity', parseInt(e.target.value) || 0)}
-                            className="bg-slate-700 border-slate-600 text-white text-sm text-center"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">单位</label>
-                          <Input
-                            value={task.unit}
-                            onChange={(e) => updateTask(index, 'unit', e.target.value)}
-                            className="bg-slate-700 border-slate-600 text-white text-sm text-center"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">已完成</label>
-                          <Input
-                            type="number"
-                            value={task.completedQuantity}
-                            onChange={(e) => updateTask(index, 'completedQuantity', parseInt(e.target.value) || 0)}
-                            className="bg-slate-700 border-slate-600 text-white text-sm text-center"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">工时/单位</label>
-                          <Input
-                            type="number"
-                            value={task.hoursPerUnit}
-                            onChange={(e) => updateTask(index, 'hoursPerUnit', parseFloat(e.target.value) || 0)}
-                            className="bg-slate-700 border-slate-600 text-white text-sm text-center"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 mt-3">
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">开始时间</label>
-                          <input
-                            type="date"
-                            value={task.startTime}
-                            onChange={(e) => updateTask(index, 'startTime', e.target.value)}
-                            className="w-full h-8 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">结束时间</label>
-                          <input
-                            type="date"
-                            value={task.endTime}
-                            onChange={(e) => updateTask(index, 'endTime', e.target.value)}
-                            className="w-full h-8 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                          />
+                          <label className="block text-xs text-slate-500 mb-1">量化</label>
+                          <div className="grid grid-cols-4 gap-2">
+                            <div>
+                              <span className="text-xs text-slate-500">目标数量</span>
+                              <Input
+                                type="number"
+                                value={task.targetQuantity}
+                                onChange={(e) => updateTask(index, 'targetQuantity', parseInt(e.target.value) || 0)}
+                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
+                              />
+                            </div>
+                            <div>
+                              <span className="text-xs text-slate-500">单位</span>
+                              <Input
+                                value={task.unit}
+                                onChange={(e) => updateTask(index, 'unit', e.target.value)}
+                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
+                                placeholder="个"
+                              />
+                            </div>
+                            <div>
+                              <span className="text-xs text-slate-500">已完成</span>
+                              <Input
+                                type="number"
+                                value={task.completedQuantity}
+                                onChange={(e) => updateTask(index, 'completedQuantity', parseInt(e.target.value) || 0)}
+                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
+                              />
+                            </div>
+                            <div>
+                              <span className="text-xs text-slate-500">工时/单位</span>
+                              <Input
+                                type="number"
+                                value={task.hoursPerUnit}
+                                onChange={(e) => updateTask(index, 'hoursPerUnit', parseFloat(e.target.value) || 0)}
+                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -618,7 +733,7 @@ export default function ProjectManagement() {
             </div>)}
           </div>
           
-          <DialogFooter>
+          <DialogFooter className="px-4 py-3 mx-0 mb-0">
             <Button variant="outline" className="bg-slate-800 text-slate-300 hover:bg-slate-700" onClick={() => { setShowCreateDialog(false); setTasks([]); }}>取消</Button>
             <Button className="bg-indigo-600 hover:bg-indigo-500 text-white" onClick={handleCreate}>创建</Button>
           </DialogFooter>
@@ -626,7 +741,7 @@ export default function ProjectManagement() {
       </Dialog>
 
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="bg-slate-900 border-none max-w-2xl p-0 h-[520px] flex flex-col">
+        <DialogContent className="bg-slate-900 border-none max-w-2xl p-0 flex flex-col top-8 translate-y-0">
           <div className="flex">
             <button
               onClick={() => setActiveTab('basic')}
@@ -650,7 +765,7 @@ export default function ProjectManagement() {
             </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 min-h-[400px]">
             {activeTab === 'basic' && (<div className="px-4 space-y-3 pb-2">
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-2">项目名称</label>
@@ -765,9 +880,8 @@ export default function ProjectManagement() {
               </div>
             </div>)}
             
-            {activeTab === 'tasks' && (<div className="space-y-4 mt-4">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-slate-400">细分任务</label>
+            {activeTab === 'tasks' && (<div className="px-4 pb-4 space-y-4">
+              <div className="flex justify-end">
                 <Button variant="outline" size="sm" className="bg-slate-800 text-slate-300 hover:bg-slate-700" onClick={addTask}>
                   <Plus className="w-4 h-4 mr-1" />
                   添加任务
@@ -787,7 +901,7 @@ export default function ProjectManagement() {
                         </Button>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-3">
                         <div>
                           <label className="block text-xs text-slate-500 mb-1">任务名称</label>
                           <Input
@@ -797,104 +911,162 @@ export default function ProjectManagement() {
                             className="bg-slate-700 border-slate-600 text-white text-sm"
                           />
                         </div>
+                        
                         <div>
-                          <label className="block text-xs text-slate-500 mb-1">负责人</label>
-                          <select
-                            value={task.userId}
-                            onChange={(e) => updateTask(index, 'userId', e.target.value)}
-                            className="w-full h-8 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="">请选择负责人</option>
+                          <label className="block text-xs text-slate-500 mb-1">任务描述</label>
+                          <Input
+                            value={task.description}
+                            onChange={(e) => updateTask(index, 'description', e.target.value)}
+                            placeholder="请输入任务描述"
+                            className="bg-slate-700 border-slate-600 text-white text-sm"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">任务类型</label>
+                            <select
+                              value={task.type}
+                              onChange={(e) => updateTask(index, 'type', e.target.value)}
+                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                            >
+                              <option value="项目任务">项目任务</option>
+                              <option value="日常任务">日常任务</option>
+                              <option value="临时任务">临时任务</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">优先级</label>
+                            <select
+                              value={task.priority}
+                              onChange={(e) => updateTask(index, 'priority', e.target.value)}
+                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                            >
+                              <option value="P1">P1 - 紧急</option>
+                              <option value="P2">P2 - 重要</option>
+                              <option value="P3">P3 - 一般</option>
+                            </select>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">状态</label>
+                            <select
+                              value={task.status}
+                              onChange={(e) => updateTask(index, 'status', e.target.value)}
+                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                            >
+                              <option value="进行中">进行中</option>
+                              <option value="已完成">已完成</option>
+                              <option value="待修改">待修改</option>
+                              <option value="已延期">已延期</option>
+                              <option value="待评审">待评审</option>
+                              <option value="已评审">已评审</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">负责人</label>
+                            <select
+                              value={task.userId}
+                              onChange={(e) => updateTask(index, 'userId', e.target.value)}
+                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                            >
+                              <option value="">请选择负责人</option>
+                              {users.map((user) => (
+                                <option key={user.id} value={user.id}>{user.nickname}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">开始时间</label>
+                            <input
+                              type="date"
+                              value={task.startTime}
+                              onChange={(e) => updateTask(index, 'startTime', e.target.value)}
+                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">结束时间</label>
+                            <input
+                              type="date"
+                              value={task.endTime}
+                              onChange={(e) => updateTask(index, 'endTime', e.target.value)}
+                              className="w-full h-9 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs text-slate-500 mb-1">参与成员</label>
+                          <div className="flex flex-wrap gap-2">
                             {users.map((user) => (
-                              <option key={user.id} value={user.id}>{user.nickname}</option>
+                              <button
+                                key={user.id}
+                                onClick={() => {
+                                  const members = task.members || []
+                                  if (members.includes(user.id)) {
+                                    updateTask(index, 'members', members.filter((id: number) => id !== user.id))
+                                  } else {
+                                    updateTask(index, 'members', [...members, user.id])
+                                  }
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
+                                  (task.members || []).includes(user.id)
+                                    ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50'
+                                    : 'bg-slate-700 text-slate-400 border-slate-600 hover:border-slate-500'
+                                }`}
+                              >
+                                {user.nickname}
+                              </button>
                             ))}
-                          </select>
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 mt-3">
+                        
                         <div>
-                          <label className="block text-xs text-slate-500 mb-1">类型</label>
-                          <select
-                            value={task.type}
-                            onChange={(e) => updateTask(index, 'type', e.target.value)}
-                            className="w-full h-8 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="项目任务">项目任务</option>
-                            <option value="日常任务">日常任务</option>
-                            <option value="临时任务">临时任务</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">优先级</label>
-                          <select
-                            value={task.priority}
-                            onChange={(e) => updateTask(index, 'priority', e.target.value)}
-                            className="w-full h-8 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="P1">P1 - 紧急</option>
-                            <option value="P2">P2 - 重要</option>
-                            <option value="P3">P3 - 一般</option>
-                          </select>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-4 gap-2 mt-3">
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">目标数量</label>
-                          <Input
-                            type="number"
-                            value={task.targetQuantity}
-                            onChange={(e) => updateTask(index, 'targetQuantity', parseInt(e.target.value) || 0)}
-                            className="bg-slate-700 border-slate-600 text-white text-sm text-center"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">单位</label>
-                          <Input
-                            value={task.unit}
-                            onChange={(e) => updateTask(index, 'unit', e.target.value)}
-                            className="bg-slate-700 border-slate-600 text-white text-sm text-center"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">已完成</label>
-                          <Input
-                            type="number"
-                            value={task.completedQuantity}
-                            onChange={(e) => updateTask(index, 'completedQuantity', parseInt(e.target.value) || 0)}
-                            className="bg-slate-700 border-slate-600 text-white text-sm text-center"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">工时/单位</label>
-                          <Input
-                            type="number"
-                            value={task.hoursPerUnit}
-                            onChange={(e) => updateTask(index, 'hoursPerUnit', parseFloat(e.target.value) || 0)}
-                            className="bg-slate-700 border-slate-600 text-white text-sm text-center"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 mt-3">
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">开始时间</label>
-                          <input
-                            type="date"
-                            value={task.startTime}
-                            onChange={(e) => updateTask(index, 'startTime', e.target.value)}
-                            className="w-full h-8 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-500 mb-1">结束时间</label>
-                          <input
-                            type="date"
-                            value={task.endTime}
-                            onChange={(e) => updateTask(index, 'endTime', e.target.value)}
-                            className="w-full h-8 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
-                          />
+                          <label className="block text-xs text-slate-500 mb-1">量化</label>
+                          <div className="grid grid-cols-4 gap-2">
+                            <div>
+                              <span className="text-xs text-slate-500">目标数量</span>
+                              <Input
+                                type="number"
+                                value={task.targetQuantity}
+                                onChange={(e) => updateTask(index, 'targetQuantity', parseInt(e.target.value) || 0)}
+                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
+                              />
+                            </div>
+                            <div>
+                              <span className="text-xs text-slate-500">单位</span>
+                              <Input
+                                value={task.unit}
+                                onChange={(e) => updateTask(index, 'unit', e.target.value)}
+                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
+                                placeholder="个"
+                              />
+                            </div>
+                            <div>
+                              <span className="text-xs text-slate-500">已完成</span>
+                              <Input
+                                type="number"
+                                value={task.completedQuantity}
+                                onChange={(e) => updateTask(index, 'completedQuantity', parseInt(e.target.value) || 0)}
+                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
+                              />
+                            </div>
+                            <div>
+                              <span className="text-xs text-slate-500">工时/单位</span>
+                              <Input
+                                type="number"
+                                value={task.hoursPerUnit}
+                                onChange={(e) => updateTask(index, 'hoursPerUnit', parseFloat(e.target.value) || 0)}
+                                className="mt-1 bg-slate-700 border-slate-600 text-white text-sm text-center"
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -904,7 +1076,7 @@ export default function ProjectManagement() {
             </div>)}
           </div>
           
-          <DialogFooter>
+          <DialogFooter className="px-4 py-3 mx-0 mb-0">
             <Button variant="outline" className="bg-slate-800 text-slate-300 hover:bg-slate-700" onClick={() => { setShowEditDialog(false); setEditingProjectId(null); setTasks([]); }}>取消</Button>
             <Button className="bg-indigo-600 hover:bg-indigo-500 text-white" onClick={handleUpdate}>保存</Button>
           </DialogFooter>
