@@ -122,26 +122,7 @@ export default function TodayReport() {
       ) : (
         <Card className="bg-slate-900/50 border-slate-800 overflow-hidden">
           <CardContent className="p-0">
-            <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-800/50 to-transparent">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                <span className="text-lg font-medium text-white">{currentUserName[0]}</span>
-              </div>
-              <div className="flex-1">
-                <h2 className="font-semibold text-white text-lg">{currentUserName}</h2>
-                <div className="flex items-center gap-4 mt-1">
-                  <span className="text-sm text-slate-400 flex items-center gap-1">
-                    <Folder className="w-3 h-3" />
-                    分组 {Object.keys(groupByProjectAndType(tasks)).length}
-                  </span>
-                  <span className="text-sm text-slate-400 flex items-center gap-1">
-                    <CalendarDays className="w-3 h-3" />
-                    任务 {tasks.length}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="border-t border-slate-700/50">
+            <div className="border-b border-slate-700/50">
               {Object.entries(groupByProjectAndType(tasks)).map(([groupName, groupData]) => {
                 const groupKey = groupName
                 const isExpanded = expandedGroups[groupKey] || false
