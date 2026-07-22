@@ -1,4 +1,4 @@
-﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -86,7 +86,7 @@ export default function DataSettings() {
               </div>
               <div>
                 <h2 className="font-semibold text-white">负荷计算公式</h2>
-                <p className="text-sm text-slate-500">人员负荷 = (任务量化数 × 工时单位) / 基准工时 × 100%</p>
+                <p className="text-sm text-slate-500">人员负荷 = (任务量化数 × 工时单位 - 已完成任务量化数 × 工时单位) / 基准工时 × 100%</p>
               </div>
             </div>
             

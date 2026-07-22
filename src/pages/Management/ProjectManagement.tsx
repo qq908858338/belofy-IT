@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,9 +9,9 @@ import { Input } from '@/components/ui/input'
 import { Plus, Edit, Trash2, Rocket, Code, Target, Globe, Building2, Users, Star, BookOpen, X } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useProjectStore } from '@/store/projectStore'
-import { getProjects, deleteProject, createProject, updateProject } from '@/api/project'
+import { getProjects, getProject, deleteProject, createProject, updateProject } from '@/api/project'
 import { getUsers } from '@/api/user'
-import { getTasks, createTask, updateTask } from '@/api/task'
+import { getTasks, createTask, updateTask, deleteTask } from '@/api/task'
 import type { Project } from '@/types'
 
 export default function ProjectManagement() {
@@ -36,6 +36,7 @@ export default function ProjectManagement() {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<'basic' | 'tasks'>('basic')
+  const [originalTaskIds, setOriginalTaskIds] = useState<number[]>([])
   const [showTaskDialog, setShowTaskDialog] = useState(false)
   const [taskDialogMode, setTaskDialogMode] = useState<'add' | 'edit'>('add')
   const [taskDialogIndex, setTaskDialogIndex] = useState<number | null>(null)
@@ -204,7 +205,7 @@ export default function ProjectManagement() {
 
     try {
       const projectTasks = await getTasks(token!, { projectId: project.id })
-      setTasks(projectTasks.map(t => ({
+      const mappedTasks = projectTasks.map(t => ({
         id: t.id,
         name: t.name,
         description: t.description || '',
@@ -219,10 +220,13 @@ export default function ProjectManagement() {
         startTime: t.startTime ? new Date(t.startTime).toISOString().split('T')[0] : '',
         endTime: t.endTime ? new Date(t.endTime).toISOString().split('T')[0] : '',
         members: (t as any).members?.map((m: any) => m.userId) || [],
-      })))
+      }))
+      setTasks(mappedTasks)
+      setOriginalTaskIds(projectTasks.map(t => t.id))
     } catch (error) {
       console.error('Failed to fetch project tasks:', error)
       setTasks([])
+      setOriginalTaskIds([])
     }
 
     setShowEditDialog(true)
@@ -242,6 +246,8 @@ export default function ProjectManagement() {
         status: formData.status || '待立项',
         members: [...selectedMembers, parseInt(formData.managerId)],
       })
+
+      const currentTaskIds = tasks.filter(t => t.id).map(t => t.id!)
 
       for (const task of tasks) {
         if (!task.name || !task.userId) continue
@@ -279,6 +285,16 @@ export default function ProjectManagement() {
             projectId: editingProjectId!,
             members: task.members,
           })
+        }
+      }
+
+      for (const originalId of originalTaskIds) {
+        if (!currentTaskIds.includes(originalId)) {
+          try {
+            await deleteTask(token!, originalId)
+          } catch (error) {
+            console.error('Failed to delete removed task:', error)
+          }
         }
       }
 
@@ -346,18 +362,69 @@ export default function ProjectManagement() {
     setShowTaskDialog(true)
   }
 
-  const saveTaskDialog = () => {
+  const saveTaskDialog = async () => {
     if (!taskFormData.name || !taskFormData.userId) {
       alert('请填写任务名称和负责人')
       return
     }
-    const taskToSave = { ...taskFormData }
-    if (taskDialogMode === 'add') {
-      setTasks(prev => [...prev, taskToSave])
-    } else if (taskDialogIndex !== null) {
-      setTasks(prev => prev.map((t, i) => i === taskDialogIndex ? taskToSave : t))
+    
+    try {
+      if (taskDialogMode === 'add') {
+        const createdTask = await createTask(token!, {
+          name: taskFormData.name,
+          description: taskFormData.description,
+          type: taskFormData.type,
+          priority: taskFormData.priority,
+          status: taskFormData.status,
+          userId: parseInt(taskFormData.userId),
+          targetQuantity: taskFormData.targetQuantity,
+          unit: taskFormData.unit,
+          completedQuantity: taskFormData.completedQuantity,
+          hoursPerUnit: taskFormData.hoursPerUnit,
+          startTime: taskFormData.startTime || undefined,
+          endTime: taskFormData.endTime || undefined,
+          projectId: editingProjectId!,
+        })
+        
+        const newTask = {
+          ...taskFormData,
+          id: createdTask.id,
+        }
+        setTasks(prev => [...prev, newTask])
+        setOriginalTaskIds(prev => [...prev, createdTask.id])
+      } else if (taskDialogIndex !== null && taskFormData.id) {
+        await updateTask(token!, taskFormData.id, {
+          name: taskFormData.name,
+          description: taskFormData.description,
+          type: taskFormData.type,
+          priority: taskFormData.priority,
+          status: taskFormData.status,
+          userId: parseInt(taskFormData.userId),
+          targetQuantity: taskFormData.targetQuantity,
+          unit: taskFormData.unit,
+          completedQuantity: taskFormData.completedQuantity,
+          hoursPerUnit: taskFormData.hoursPerUnit,
+          startTime: taskFormData.startTime || undefined,
+          endTime: taskFormData.endTime || undefined,
+          projectId: editingProjectId!,
+        } as any)
+        
+        const updatedTask = {
+          ...taskFormData,
+        }
+        setTasks(prev => prev.map((t, i) => i === taskDialogIndex ? updatedTask : t))
+      }
+      
+      setShowTaskDialog(false)
+      
+      if (token) {
+        const updatedProjects = await getProjects(token)
+        setProjects(updatedProjects)
+      }
+    } catch (error: any) {
+      console.error('Failed to save task:', error)
+      alert('保存任务失败：' + (error?.response?.data?.message || error?.message || '未知错误'))
     }
-    setShowTaskDialog(false)
   }
 
   const updateTaskField = (index: number, field: string, value: any) => {
@@ -366,8 +433,25 @@ export default function ProjectManagement() {
     ))
   }
 
-  const removeTask = (index: number) => {
+  const removeTask = async (index: number) => {
+    const task = tasks[index]
+    if (task.id && token) {
+      try {
+        await deleteTask(token, task.id)
+      } catch (error) {
+        console.error('Failed to delete task:', error)
+      }
+    }
     setTasks(prev => prev.filter((_, i) => i !== index))
+    
+    if (token) {
+      try {
+        const updatedProjects = await getProjects(token)
+        setProjects(updatedProjects)
+      } catch (error) {
+        console.error('Failed to update projects:', error)
+      }
+    }
   }
 
   const getIcon = (iconName: string) => {
@@ -395,7 +479,8 @@ export default function ProjectManagement() {
     const tasks = project.tasks || []
     if (tasks.length === 0) return 0
     const total = tasks.reduce((sum: number, t: any) => {
-      return sum + (t.completedQuantity / t.targetQuantity * 100)
+      const target = t.targetQuantity || 1
+      return sum + ((t.completedQuantity || 0) / target * 100)
     }, 0)
     return Math.round(total / tasks.length)
   }
@@ -672,9 +757,11 @@ export default function ProjectManagement() {
                         <Button variant="ghost" size="icon" className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 h-7 w-7" onClick={() => openEditTask(index)}>
                           <Edit className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 h-7 w-7" onClick={() => removeTask(index)}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        <Popconfirm title="确定删除此任务？" onConfirm={() => removeTask(index)}>
+                          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 h-7 w-7">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </Popconfirm>
                       </div>
                     </div>
                   ))
@@ -864,9 +951,11 @@ export default function ProjectManagement() {
                         <Button variant="ghost" size="icon" className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 h-7 w-7" onClick={() => openEditTask(index)}>
                           <Edit className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 h-7 w-7" onClick={() => removeTask(index)}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        <Popconfirm title="确定删除此任务？" onConfirm={() => removeTask(index)}>
+                          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 h-7 w-7">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </Popconfirm>
                       </div>
                     </div>
                   ))
@@ -876,7 +965,7 @@ export default function ProjectManagement() {
           </div>
           
           <DialogFooter className="px-4 py-3 mx-0 mb-0">
-            <Button variant="outline" className="bg-slate-800 text-slate-300 hover:bg-slate-700" onClick={() => { setShowEditDialog(false); setEditingProjectId(null); setTasks([]); }}>取消</Button>
+            <Button variant="outline" className="bg-slate-800 text-slate-300 hover:bg-slate-700" onClick={() => { setShowEditDialog(false); setEditingProjectId(null); setTasks([]); setOriginalTaskIds([]); }}>取消</Button>
             <Button className="bg-indigo-600 hover:bg-indigo-500 text-white" onClick={handleUpdate}>保存</Button>
           </DialogFooter>
         </DialogContent>

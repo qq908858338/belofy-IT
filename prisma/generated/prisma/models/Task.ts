@@ -281,8 +281,8 @@ export type TaskGroupByOutputType = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date
-  endTime: Date
+  startTime: Date | null
+  endTime: Date | null
   description: string | null
   projectId: number | null
   userId: number
@@ -324,8 +324,8 @@ export type TaskWhereInput = {
   unit?: Prisma.StringFilter<"Task"> | string
   completedQuantity?: Prisma.IntFilter<"Task"> | number
   hoursPerUnit?: Prisma.FloatFilter<"Task"> | number
-  startTime?: Prisma.DateTimeFilter<"Task"> | Date | string
-  endTime?: Prisma.DateTimeFilter<"Task"> | Date | string
+  startTime?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  endTime?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
   description?: Prisma.StringNullableFilter<"Task"> | string | null
   projectId?: Prisma.IntNullableFilter<"Task"> | number | null
   userId?: Prisma.IntFilter<"Task"> | number
@@ -350,8 +350,8 @@ export type TaskOrderByWithRelationInput = {
   unit?: Prisma.SortOrder
   completedQuantity?: Prisma.SortOrder
   hoursPerUnit?: Prisma.SortOrder
-  startTime?: Prisma.SortOrder
-  endTime?: Prisma.SortOrder
+  startTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  endTime?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   projectId?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -379,8 +379,8 @@ export type TaskWhereUniqueInput = Prisma.AtLeast<{
   unit?: Prisma.StringFilter<"Task"> | string
   completedQuantity?: Prisma.IntFilter<"Task"> | number
   hoursPerUnit?: Prisma.FloatFilter<"Task"> | number
-  startTime?: Prisma.DateTimeFilter<"Task"> | Date | string
-  endTime?: Prisma.DateTimeFilter<"Task"> | Date | string
+  startTime?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  endTime?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
   description?: Prisma.StringNullableFilter<"Task"> | string | null
   projectId?: Prisma.IntNullableFilter<"Task"> | number | null
   userId?: Prisma.IntFilter<"Task"> | number
@@ -405,8 +405,8 @@ export type TaskOrderByWithAggregationInput = {
   unit?: Prisma.SortOrder
   completedQuantity?: Prisma.SortOrder
   hoursPerUnit?: Prisma.SortOrder
-  startTime?: Prisma.SortOrder
-  endTime?: Prisma.SortOrder
+  startTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  endTime?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   projectId?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -433,8 +433,8 @@ export type TaskScalarWhereWithAggregatesInput = {
   unit?: Prisma.StringWithAggregatesFilter<"Task"> | string
   completedQuantity?: Prisma.IntWithAggregatesFilter<"Task"> | number
   hoursPerUnit?: Prisma.FloatWithAggregatesFilter<"Task"> | number
-  startTime?: Prisma.DateTimeWithAggregatesFilter<"Task"> | Date | string
-  endTime?: Prisma.DateTimeWithAggregatesFilter<"Task"> | Date | string
+  startTime?: Prisma.DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
+  endTime?: Prisma.DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
   description?: Prisma.StringNullableWithAggregatesFilter<"Task"> | string | null
   projectId?: Prisma.IntNullableWithAggregatesFilter<"Task"> | number | null
   userId?: Prisma.IntWithAggregatesFilter<"Task"> | number
@@ -452,8 +452,8 @@ export type TaskCreateInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   isArchived?: boolean
   createdAt?: Date | string
@@ -476,8 +476,8 @@ export type TaskUncheckedCreateInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   projectId?: number | null
   userId: number
@@ -499,8 +499,8 @@ export type TaskUpdateInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -523,8 +523,8 @@ export type TaskUncheckedUpdateInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   userId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -547,8 +547,8 @@ export type TaskCreateManyInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   projectId?: number | null
   userId: number
@@ -566,8 +566,8 @@ export type TaskUpdateManyMutationInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -584,8 +584,8 @@ export type TaskUncheckedUpdateManyInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   userId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -742,6 +742,10 @@ export type FloatFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
 }
@@ -867,8 +871,8 @@ export type TaskCreateWithoutUserInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   isArchived?: boolean
   createdAt?: Date | string
@@ -890,8 +894,8 @@ export type TaskUncheckedCreateWithoutUserInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   projectId?: number | null
   isArchived?: boolean
@@ -941,8 +945,8 @@ export type TaskScalarWhereInput = {
   unit?: Prisma.StringFilter<"Task"> | string
   completedQuantity?: Prisma.IntFilter<"Task"> | number
   hoursPerUnit?: Prisma.FloatFilter<"Task"> | number
-  startTime?: Prisma.DateTimeFilter<"Task"> | Date | string
-  endTime?: Prisma.DateTimeFilter<"Task"> | Date | string
+  startTime?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  endTime?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
   description?: Prisma.StringNullableFilter<"Task"> | string | null
   projectId?: Prisma.IntNullableFilter<"Task"> | number | null
   userId?: Prisma.IntFilter<"Task"> | number
@@ -960,8 +964,8 @@ export type TaskCreateWithoutMembersInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   isArchived?: boolean
   createdAt?: Date | string
@@ -983,8 +987,8 @@ export type TaskUncheckedCreateWithoutMembersInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   projectId?: number | null
   userId: number
@@ -1021,8 +1025,8 @@ export type TaskUpdateWithoutMembersInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1044,8 +1048,8 @@ export type TaskUncheckedUpdateWithoutMembersInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   userId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1066,8 +1070,8 @@ export type TaskCreateWithoutProjectInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   isArchived?: boolean
   createdAt?: Date | string
@@ -1089,8 +1093,8 @@ export type TaskUncheckedCreateWithoutProjectInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   userId: number
   isArchived?: boolean
@@ -1136,8 +1140,8 @@ export type TaskCreateWithoutReportsInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   isArchived?: boolean
   createdAt?: Date | string
@@ -1159,8 +1163,8 @@ export type TaskUncheckedCreateWithoutReportsInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   projectId?: number | null
   userId: number
@@ -1197,8 +1201,8 @@ export type TaskUpdateWithoutReportsInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1220,8 +1224,8 @@ export type TaskUncheckedUpdateWithoutReportsInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   userId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1242,8 +1246,8 @@ export type TaskCreateWithoutReviewsInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   isArchived?: boolean
   createdAt?: Date | string
@@ -1265,8 +1269,8 @@ export type TaskUncheckedCreateWithoutReviewsInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   projectId?: number | null
   userId: number
@@ -1303,8 +1307,8 @@ export type TaskUpdateWithoutReviewsInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1326,8 +1330,8 @@ export type TaskUncheckedUpdateWithoutReviewsInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   userId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1348,8 +1352,8 @@ export type TaskCreateWithoutAchievementsInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   isArchived?: boolean
   createdAt?: Date | string
@@ -1371,8 +1375,8 @@ export type TaskUncheckedCreateWithoutAchievementsInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   projectId?: number | null
   userId: number
@@ -1409,8 +1413,8 @@ export type TaskUpdateWithoutAchievementsInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1432,8 +1436,8 @@ export type TaskUncheckedUpdateWithoutAchievementsInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   userId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1455,8 +1459,8 @@ export type TaskCreateManyUserInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   projectId?: number | null
   isArchived?: boolean
@@ -1473,8 +1477,8 @@ export type TaskUpdateWithoutUserInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1496,8 +1500,8 @@ export type TaskUncheckedUpdateWithoutUserInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1519,8 +1523,8 @@ export type TaskUncheckedUpdateManyWithoutUserInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1538,8 +1542,8 @@ export type TaskCreateManyProjectInput = {
   unit: string
   completedQuantity: number
   hoursPerUnit: number
-  startTime: Date | string
-  endTime: Date | string
+  startTime?: Date | string | null
+  endTime?: Date | string | null
   description?: string | null
   userId: number
   isArchived?: boolean
@@ -1556,8 +1560,8 @@ export type TaskUpdateWithoutProjectInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1579,8 +1583,8 @@ export type TaskUncheckedUpdateWithoutProjectInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1602,8 +1606,8 @@ export type TaskUncheckedUpdateManyWithoutProjectInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   completedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   hoursPerUnit?: Prisma.FloatFieldUpdateOperationsInput | number
-  startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1799,8 +1803,8 @@ export type $TaskPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     unit: string
     completedQuantity: number
     hoursPerUnit: number
-    startTime: Date
-    endTime: Date
+    startTime: Date | null
+    endTime: Date | null
     description: string | null
     projectId: number | null
     userId: number

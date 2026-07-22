@@ -1,14 +1,16 @@
-﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Users, FolderKanban, ListTodo, Clock, TrendingUp, Award } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useUserStore } from '@/store/userStore'
+import { useSettingStore } from '@/store/settingStore'
 import { getUsers } from '@/api/user'
 import { getTasks } from '@/api/task'
 import { getProjects } from '@/api/project'
 import { getReports } from '@/api/report'
+import { getSettings } from '@/api/setting'
 
 export default function PeopleManagement() {
   const [loading, setLoading] = useState(true)
@@ -18,6 +20,7 @@ export default function PeopleManagement() {
   
   const { token } = useAuthStore()
   const { users, setUsers } = useUserStore()
+  const { settings, setSettings } = useSettingStore()
 
   useEffect(() => {
     fetchData()
@@ -26,17 +29,19 @@ export default function PeopleManagement() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [usersData, tasksData, projectsData, reportsData] = await Promise.all([
+      const [usersData, tasksData, projectsData, reportsData, settingsData] = await Promise.all([
         getUsers(token!),
         getTasks(token!),
         getProjects(token!),
         getReports(token!),
+        getSettings(token!),
       ])
       
       setUsers(usersData)
       setTasks(tasksData)
       setProjects(projectsData)
       setReports(reportsData)
+      setSettings(settingsData)
     } catch (error) {
       console.error('Failed to fetch data:', error)
     } finally {
@@ -45,20 +50,30 @@ export default function PeopleManagement() {
   }
 
   const getUserStats = (userId: number) => {
-    const userTasks = tasks.filter(t => t.userId === userId)
+    const ownerTasks = tasks.filter(t => t.userId === userId)
+    const participantTasks = tasks.filter(t => 
+      t.userId !== userId && t.members && t.members.some((m: any) => m.userId === userId)
+    )
+    const allUserTasks = [...new Set([...ownerTasks, ...participantTasks])]
     const userReports = reports.filter(r => r.userId === userId)
     
     const projectCount = projects.filter(p => 
       p.managerId === userId || (p.members && p.members.some((m: any) => m.userId === userId))
     ).length
     
-    const taskCount = userTasks.length
+    const taskCount = ownerTasks.length
+    const participantTaskCount = participantTasks.length
     
-    const totalHours = userTasks.reduce((sum, t) => 
-      sum + (t.completedQuantity || 0) * (t.hoursPerUnit || 1), 0
+    const totalTargetHours = allUserTasks.reduce((sum, t) => 
+      sum + (t.targetQuantity || 0) * (t.hoursPerUnit || 1), 0
     )
     
-    const load = taskCount > 0 ? Math.min(Math.round((totalHours / 32) * 100), 150) : 0
+    const totalRemainingHours = allUserTasks.reduce((sum, t) => 
+      sum + ((t.targetQuantity || 0) - (t.completedQuantity || 0)) * (t.hoursPerUnit || 1), 0
+    )
+    
+    const baseHours = parseInt(settings.loadBaseHours || '40') || 40
+    const load = allUserTasks.length > 0 && baseHours > 0 ? Math.round((totalRemainingHours / baseHours) * 100) : 0
     
     const reportCount = userReports.length
     
@@ -66,12 +81,13 @@ export default function PeopleManagement() {
       ? Math.round(userReports.reduce((sum, r) => sum + (r.score || 0), 0) / userReports.length)
       : 0
     
-    const performanceScore = Math.round((reportCount * 10 + avgScore * 0.5 + (userTasks.filter(t => t.status === '已完成').length * 5)) / (reportCount > 0 ? 1 : 1))
+    const performanceScore = Math.round((reportCount * 10 + avgScore * 0.5 + (allUserTasks.filter(t => t.status === '已完成').length * 5)) / (reportCount > 0 ? 1 : 1))
     
     return {
       projectCount,
       taskCount,
-      totalHours: `${totalHours}h`,
+      participantTaskCount,
+      totalHours: `${Math.round(totalTargetHours / 8)}天`,
       load,
       reportCount,
       avgScore: avgScore || '--',
@@ -142,6 +158,16 @@ export default function PeopleManagement() {
                       <div>
                         <p className="text-xs text-slate-500">负责任务</p>
                         <p className="text-lg font-bold text-white">{stats.taskCount}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50">
+                      <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                        <Users className="w-5 h-5 text-indigo-400" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500">参与任务</p>
+                        <p className="text-lg font-bold text-white">{stats.participantTaskCount}</p>
                       </div>
                     </div>
                     

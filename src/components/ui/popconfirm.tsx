@@ -1,11 +1,13 @@
+"use client"
+
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface PopconfirmProps {
   children: React.ReactNode
@@ -37,12 +39,13 @@ export function Popconfirm({
   }
 
   return (
-    <TooltipProvider delayDuration={0}>
-      <Tooltip open={open} onOpenChange={setOpen}>
-        <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <TooltipContent className="flex flex-col gap-2 p-3 bg-gray-900 text-white border-0 shadow-lg">
-          <p className="text-sm font-medium">{title}</p>
-          <div className="flex gap-2">
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-xs bg-gray-900 border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">{title}</DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
             <Button
               variant="outline"
               size="sm"
@@ -59,8 +62,14 @@ export function Popconfirm({
               {confirmText}
             </Button>
           </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+        </DialogContent>
+      </Dialog>
+      <span
+        onClick={() => setOpen(true)}
+        className="cursor-pointer"
+      >
+        {children}
+      </span>
+    </>
   )
 }

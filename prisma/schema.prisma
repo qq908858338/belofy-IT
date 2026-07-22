@@ -47,8 +47,8 @@ model Task {
   unit            String
   completedQuantity Int
   hoursPerUnit    Float
-  startTime       DateTime
-  endTime         DateTime
+  startTime       DateTime?
+  endTime         DateTime?
   description     String?
   projectId       Int?
   userId          Int

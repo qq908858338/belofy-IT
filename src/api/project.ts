@@ -11,6 +11,13 @@ export async function getProjects(token: string, params?: { userId?: number; isA
   return response.data
 }
 
+export async function getProject(token: string, id: number): Promise<Project> {
+  const response = await axios.get(`${API_BASE_URL}/projects/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  return response.data
+}
+
 export async function createProject(token: string, data: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'isArchived' | 'members'> & { members?: number[] }): Promise<Project> {
   const response = await axios.post(`${API_BASE_URL}/projects`, data, {
     headers: { Authorization: `Bearer ${token}` }

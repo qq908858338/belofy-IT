@@ -1,28 +1,29 @@
-﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Popconfirm } from '@/components/ui/popconfirm'
-import { Progress } from '@/components/ui/progress'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Plus, Edit, Trash2 } from 'lucide-react'
+import { Plus, Edit, Trash2, Folder, User, ChevronDown, ChevronUp } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useTaskStore } from '@/store/taskStore'
+import { useSettingStore } from '@/store/settingStore'
 import { getTasks, deleteTask, createTask, updateTask } from '@/api/task'
 import { getUsers } from '@/api/user'
 import { getProjects } from '@/api/project'
+import { getSettings } from '@/api/setting'
 import type { Task } from '@/types'
 
 export default function TaskManagement() {
   const [loading, setLoading] = useState(true)
-  const [taskTypeFilter, setTaskTypeFilter] = useState<string>('all')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [users, setUsers] = useState<any[]>([])
   const [projects, setProjects] = useState<any[]>([])
   
   const { token } = useAuthStore()
   const { tasks, setTasks, deleteTask: removeTask, addTask } = useTaskStore()
+  const { settings, setSettings } = useSettingStore()
 
   const [formData, setFormData] = useState({
     name: '',
@@ -42,12 +43,23 @@ export default function TaskManagement() {
   })
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     fetchTasks()
     fetchUsers()
     fetchProjects()
+    fetchSettingsData()
   }, [])
+
+  const fetchSettingsData = async () => {
+    try {
+      const data = await getSettings(token!)
+      setSettings(data)
+    } catch (error) {
+      console.error('Failed to fetch settings:', error)
+    }
+  }
 
   const fetchTasks = async () => {
     setLoading(true)
@@ -162,15 +174,6 @@ export default function TaskManagement() {
     }
   }
 
-  const getPriorityBadge = (priority: string) => {
-    const styles: Record<string, string> = {
-      P1: 'bg-red-500/10 text-red-400 border-red-500/30',
-      P2: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-      P3: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-    }
-    return styles[priority] || 'bg-slate-500/10 text-slate-400'
-  }
-
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
       '进行中': 'bg-blue-500/10 text-blue-400',
@@ -183,23 +186,85 @@ export default function TaskManagement() {
     return styles[status] || 'bg-slate-500/10 text-slate-400'
   }
 
-  const filteredTasks = taskTypeFilter === 'all' 
-    ? tasks 
-    : tasks.filter(t => t.type === taskTypeFilter)
+  const getTypeBadge = (type: string) => {
+    const styles: Record<string, string> = {
+      '项目任务': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+      '日常任务': 'bg-green-500/20 text-green-300 border-green-500/30',
+      '临时任务': 'bg-orange-500/20 text-orange-300 border-orange-500/30',
+    }
+    return styles[type] || 'bg-slate-500/20 text-slate-300'
+  }
 
-  const groupedTasks = filteredTasks.reduce((acc, task) => {
-    const key = task.user?.nickname || '未知用户'
-    if (!acc[key]) acc[key] = {}
-    const typeKey = task.type
-    if (!acc[key][typeKey]) acc[key][typeKey] = []
-    acc[key][typeKey].push(task)
+  const getUserStats = (userName: string) => {
+    const userTasks = tasks.filter(t => 
+      (t.user?.nickname || '未知用户') === userName ||
+      (t.members?.some(m => m.user?.nickname === userName) || false)
+    )
+    const userProjects = [...new Set(userTasks.filter(t => t.projectId).map(t => t.projectId))]
+    
+    let totalCompleted = 0
+    let totalTarget = 0
+    let totalRemainingHours = 0
+    
+    userTasks.forEach(task => {
+      totalCompleted += task.completedQuantity
+      totalTarget += task.targetQuantity
+      totalRemainingHours += (task.targetQuantity - task.completedQuantity) * task.hoursPerUnit
+    })
+    
+    const progress = totalTarget > 0 ? Math.round((totalCompleted / totalTarget) * 100) : 0
+    const baseHours = parseInt(settings.loadBaseHours || '40') || 40
+    const load = baseHours > 0 ? Math.round((totalRemainingHours / baseHours) * 100) : 0
+    
+    return {
+      projectCount: userProjects.length,
+      taskCount: userTasks.length,
+      completed: totalCompleted,
+      target: totalTarget,
+      progress,
+      load,
+    }
+  }
+
+  const groupedByUser = tasks.reduce((acc, task) => {
+    const ownerName = task.user?.nickname || '未知用户'
+    
+    if (!acc[ownerName]) acc[ownerName] = []
+    acc[ownerName].push(task)
+    
+    if (task.members && task.members.length > 0) {
+      task.members.forEach(member => {
+        const memberName = member.user?.nickname
+        if (memberName && memberName !== ownerName) {
+          if (!acc[memberName]) acc[memberName] = []
+          acc[memberName].push(task)
+        }
+      })
+    }
+    
     return acc
-  }, {} as Record<string, Record<string, Task[]>>)
+  }, {} as Record<string, Task[]>)
 
-  const taskTypes = ['all', '项目任务', '日常任务', '临时任务']
+  const groupByProjectAndType = (userTasks: Task[]) => {
+    return userTasks.reduce((acc, task) => {
+      let groupKey: string
+      
+      if (task.type === '日常任务') {
+        groupKey = '日常任务'
+      } else if (task.type === '临时任务') {
+        groupKey = '临时任务'
+      } else {
+        groupKey = task.project?.name || '未分配项目'
+      }
+      
+      if (!acc[groupKey]) acc[groupKey] = { tasks: [], type: task.type }
+      acc[groupKey].tasks.push(task)
+      return acc
+    }, {} as Record<string, { tasks: Task[], type: string }>)
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">任务管理</h1>
@@ -210,95 +275,148 @@ export default function TaskManagement() {
         </Button>
       </div>
 
-      <div className="flex gap-2">
-        {taskTypes.map((type) => (
-          <Button
-            key={type}
-            variant={taskTypeFilter === type ? 'secondary' : 'outline'}
-            className={`${taskTypeFilter === type 
-              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' 
-              : 'bg-slate-900/50 text-slate-400 border-slate-700 hover:text-white'
-            }`}
-            onClick={() => setTaskTypeFilter(type)}
-          >
-            {type === 'all' ? '全部' : type}
-          </Button>
-        ))}
-      </div>
-
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
         </div>
-      ) : Object.keys(groupedTasks).length === 0 ? (
+      ) : Object.keys(groupedByUser).length === 0 ? (
         <Card className="bg-slate-900/50 border-slate-800">
           <CardContent className="p-12 text-center">
             <p className="text-slate-400">暂无任务数据</p>
           </CardContent>
         </Card>
       ) : (
-        Object.entries(groupedTasks).map(([userName, types]) => (
-          <Card key={userName} className="bg-slate-900/50 border-slate-800">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                  <span className="font-medium text-white">{userName[0]}</span>
-                </div>
-                <h2 className="font-semibold text-white">{userName}</h2>
-              </div>
-              
-              {Object.entries(types).map(([type, typeTasks]) => (
-                <div key={type} className="mb-6">
-                  <h3 className="text-sm font-medium text-slate-400 mb-3">{type}</h3>
-                  <div className="space-y-3">
-                    {typeTasks.map((task) => {
-                      const progress = task.targetQuantity 
-                        ? Math.round((task.completedQuantity / task.targetQuantity) * 100) 
-                        : 0
-                      return (
-                        <div key={task.id} className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline" className={getStatusBadge(task.status)}>
-                                {task.status}
-                              </Badge>
-                              <Badge variant="outline" className={getPriorityBadge(task.priority)}>
-                                {task.priority}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Button variant="ghost" size="icon" className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10" onClick={() => handleEdit(task)}>
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Popconfirm title="确定删除此任务？" onConfirm={() => handleDelete(task.id)}>
-                                <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-400 hover:bg-red-500/10">
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </Popconfirm>
-                            </div>
-                          </div>
-                          
-                          <h4 className="font-medium text-white mb-2">{task.name}</h4>
-                          
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm text-slate-500">进度</span>
-                            <span className="text-sm text-white font-medium">{progress}%</span>
-                          </div>
-                          <Progress value={progress} className="h-2 bg-slate-700" />
-                          
-                          <div className="flex items-center justify-between mt-3 text-sm">
-                            <span className="text-slate-500">完成数/量化总数</span>
-                            <span className="text-white">{task.completedQuantity} / {task.targetQuantity}</span>
-                          </div>
-                        </div>
-                      )
-                    })}
+        Object.entries(groupedByUser).map(([userName, userTasks]) => {
+          const stats = getUserStats(userName)
+          const projectsMap = groupByProjectAndType(userTasks)
+          
+          return (
+            <Card key={userName} className="bg-slate-900/50 border-slate-800 overflow-hidden">
+              <CardContent className="p-0">
+                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-800/50 to-transparent">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <span className="text-lg font-medium text-white">{userName[0]}</span>
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="font-semibold text-white text-lg">{userName}</h2>
+                    <div className="flex items-center gap-4 mt-1">
+                      <span className="text-sm text-slate-400 flex items-center gap-1">
+                        <Folder className="w-3 h-3" />
+                        项目 {stats.projectCount}
+                      </span>
+                      <span className="text-sm text-slate-400 flex items-center gap-1">
+                        <User className="w-3 h-3" />
+                        任务 {stats.taskCount}
+                      </span>
+                      <span className="text-sm text-slate-400">
+                        完成 {stats.completed}/{stats.target}
+                      </span>
+                      <Badge variant="outline" className={`${stats.load > 80 ? 'bg-red-500/10 text-red-400' : stats.load > 50 ? 'bg-orange-500/10 text-orange-400' : 'bg-green-500/10 text-green-400'}`}>
+                        负荷 {stats.load}%
+                      </Badge>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        ))
+                
+                {Object.entries(projectsMap).map(([groupName, groupData]) => {
+                  const groupKey = `${userName}-${groupName}`
+                  const isExpanded = expandedGroups[groupKey] || false
+                  
+                  return (
+                    <div key={groupName} className="border-t border-slate-700/50">
+                      <div 
+                        className={`flex items-center justify-between px-4 py-2 cursor-pointer ${groupName === '日常任务' ? 'bg-green-500/5' : groupName === '临时任务' ? 'bg-orange-500/5' : 'bg-slate-800/30'}`}
+                        onClick={() => setExpandedGroups(prev => ({ ...prev, [groupKey]: !prev[groupKey] }))}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Folder className={`w-4 h-4 ${groupName === '日常任务' ? 'text-green-500' : groupName === '临时任务' ? 'text-orange-500' : 'text-slate-500'}`} />
+                          <span className={`text-sm font-medium ${groupName === '日常任务' ? 'text-green-400' : groupName === '临时任务' ? 'text-orange-400' : 'text-slate-400'}`}>{groupName}</span>
+                          <span className="text-xs text-slate-500">({groupData.tasks.length})</span>
+                        </div>
+                        <Button variant="ghost" size="icon" className="text-slate-500 hover:text-white">
+                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                      
+                      {isExpanded && (
+                        <div className="divide-y divide-slate-700/30">
+                          {groupData.tasks.map((task) => {
+                            const progress = task.targetQuantity 
+                              ? Math.round((task.completedQuantity / task.targetQuantity) * 100) 
+                              : 0
+                            
+                            return (
+                              <div key={task.id} className="flex items-center justify-between px-4 py-3 hover:bg-slate-800/20 transition-colors">
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <Badge variant="outline" className={`${getStatusBadge(task.status)} w-auto`}>
+                                    {task.status}
+                                  </Badge>
+                                  <span className="font-medium text-white truncate">{task.name}</span>
+                                  {(task.user?.nickname === userName) && (
+                                    <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/30 w-auto text-xs">
+                                      负责人
+                                    </Badge>
+                                  )}
+                                  {(task.members?.some(m => m.user?.nickname === userName) || false) && (task.user?.nickname !== userName) && (
+                                    <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30 w-auto text-xs">
+                                      组员
+                                    </Badge>
+                                  )}
+                                </div>
+                                
+                                <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-2 min-w-[120px]">
+                                    <span className="text-xs text-slate-500">{progress}%</span>
+                                    <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                      <div 
+                                        className={`h-full rounded-full ${progress >= 100 ? 'bg-green-500' : progress >= 50 ? 'bg-blue-500' : 'bg-yellow-500'}`} 
+                                        style={{ width: `${progress}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                  
+                                  <span className="text-xs text-slate-500 min-w-[60px]">{task.completedQuantity}/{task.targetQuantity}</span>
+                                  
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className={`text-xs ${task.status === '待评审' || task.status === '待修改' ? 'text-orange-400 hover:bg-orange-500/10' : task.status === '已评审' ? 'text-green-400 hover:bg-green-500/10' : 'text-slate-500 hover:bg-slate-700'}`}
+                                  >
+                                    {task.status === '待评审' || task.status === '待修改' ? '批示' : '已批示'}
+                                  </Button>
+                                  
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="text-slate-500 hover:text-blue-400 hover:bg-blue-500/10"
+                                    onClick={(e) => { e.stopPropagation(); handleEdit(task); }}
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                  
+                                  <Popconfirm title="确定删除此任务？" onConfirm={() => handleDelete(task.id)}>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="text-slate-500 hover:text-red-400 hover:bg-red-500/10"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </Popconfirm>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </CardContent>
+            </Card>
+          )
+        })
       )}
 
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>

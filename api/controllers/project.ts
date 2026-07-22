@@ -36,6 +36,30 @@ export async function getProjects(req: Request, res: Response) {
   }
 }
 
+export async function getProject(req: Request, res: Response) {
+  try {
+    const { id } = req.params
+    
+    const project = await prisma.project.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        manager: true,
+        tasks: true,
+        members: { include: { user: true } }
+      }
+    })
+    
+    if (!project) {
+      res.status(404).json({ message: '项目不存在' })
+      return
+    }
+    
+    res.json(project)
+  } catch (error) {
+    res.status(500).json({ message: '服务器内部错误' })
+  }
+}
+
 export async function createProject(req: Request, res: Response) {
   try {
     const { name, description, icon, startTime, endTime, status, managerId, members } = req.body
@@ -125,7 +149,8 @@ export async function updateProject(req: Request, res: Response) {
       where: { id: parseInt(id) },
       include: {
         manager: true,
-        members: { include: { user: true } }
+        members: { include: { user: true } },
+        tasks: true
       }
     })
     
@@ -143,9 +168,17 @@ export async function updateProject(req: Request, res: Response) {
 export async function deleteProject(req: Request, res: Response) {
   try {
     const { id } = req.params
+    const projectId = parseInt(id)
+    
+    await prisma.taskMember.deleteMany({ where: { task: { projectId } } })
+    await prisma.report.deleteMany({ where: { task: { projectId } } })
+    await prisma.achievement.deleteMany({ where: { projectId } })
+    await prisma.review.deleteMany({ where: { targetId: projectId } })
+    await prisma.task.deleteMany({ where: { projectId } })
+    await prisma.projectMember.deleteMany({ where: { projectId } })
     
     await prisma.project.delete({
-      where: { id: parseInt(id) }
+      where: { id: projectId }
     })
     
     res.json({ message: '项目已删除' })
@@ -153,7 +186,8 @@ export async function deleteProject(req: Request, res: Response) {
     if (error.code === 'P2025') {
       res.status(404).json({ message: '项目不存在' })
     } else {
-      res.status(500).json({ message: '服务器内部错误' })
+      console.error('deleteProject error:', error.message || error)
+      res.status(500).json({ message: '服务器内部错误', detail: error.message })
     }
   }
 }

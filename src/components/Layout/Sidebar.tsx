@@ -41,6 +41,11 @@ export default function Sidebar() {
 
   const isActive = (path: string) => location.pathname.startsWith(path)
 
+  const hasActiveChild = (menu: typeof MENU_ITEMS[0]) => {
+    if (!menu.children) return false
+    return menu.children.some(child => location.pathname.startsWith(child.path))
+  }
+
   return (
     <>
       <Button
@@ -94,7 +99,7 @@ export default function Sidebar() {
                 </Button>
 
                 {expanded && menu.children && (
-                  <div className={`ml-4 mt-1 space-y-1 border-l border-slate-800 pl-4 ${isActive(menu.path) ? '' : 'hidden'}`}>
+                  <div className={`ml-4 mt-1 space-y-1 border-l border-slate-800 pl-4 ${isActive(menu.path) || hasActiveChild(menu) ? '' : 'hidden'}`}>
                     {menu.children.map((child) => (
                       <Button
                         key={child.id}
