@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store/authStore'
 import { useTaskStore } from '@/store/taskStore'
 import { getTasks } from '@/api/task'
 import type { Task } from '@/types'
+import { getTaskProgress as calcTaskProgress, getTaskTotalTarget } from '@/lib/utils'
 
 export default function YesterdayReport() {
   const [loading, setLoading] = useState(true)
@@ -96,9 +97,7 @@ export default function YesterdayReport() {
               
               <div className="space-y-4">
                 {typeTasks.map((task) => {
-                  const progress = task.targetQuantity 
-                    ? Math.round((task.completedQuantity / task.targetQuantity) * 100) 
-                    : 0
+                  const progress = calcTaskProgress(task)
                   
                   return (
                     <div key={task.id} className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50">

@@ -36,6 +36,8 @@ export interface Task {
   user?: User
   project?: Project
   members?: TaskMember[]
+  frequency?: string
+  dailyDescription?: string
 }
 
 export interface TaskMember {

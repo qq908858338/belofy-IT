@@ -62,6 +62,8 @@ export type TaskMinAggregateOutputType = {
   isArchived: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
+  frequency: string | null
+  dailyDescription: string | null
 }
 
 export type TaskMaxAggregateOutputType = {
@@ -82,6 +84,8 @@ export type TaskMaxAggregateOutputType = {
   isArchived: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
+  frequency: string | null
+  dailyDescription: string | null
 }
 
 export type TaskCountAggregateOutputType = {
@@ -102,6 +106,8 @@ export type TaskCountAggregateOutputType = {
   isArchived: number
   createdAt: number
   updatedAt: number
+  frequency: number
+  dailyDescription: number
   _all: number
 }
 
@@ -142,6 +148,8 @@ export type TaskMinAggregateInputType = {
   isArchived?: true
   createdAt?: true
   updatedAt?: true
+  frequency?: true
+  dailyDescription?: true
 }
 
 export type TaskMaxAggregateInputType = {
@@ -162,6 +170,8 @@ export type TaskMaxAggregateInputType = {
   isArchived?: true
   createdAt?: true
   updatedAt?: true
+  frequency?: true
+  dailyDescription?: true
 }
 
 export type TaskCountAggregateInputType = {
@@ -182,6 +192,8 @@ export type TaskCountAggregateInputType = {
   isArchived?: true
   createdAt?: true
   updatedAt?: true
+  frequency?: true
+  dailyDescription?: true
   _all?: true
 }
 
@@ -289,6 +301,8 @@ export type TaskGroupByOutputType = {
   isArchived: boolean
   createdAt: Date
   updatedAt: Date
+  frequency: string | null
+  dailyDescription: string | null
   _count: TaskCountAggregateOutputType | null
   _avg: TaskAvgAggregateOutputType | null
   _sum: TaskSumAggregateOutputType | null
@@ -332,6 +346,8 @@ export type TaskWhereInput = {
   isArchived?: Prisma.BoolFilter<"Task"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Task"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Task"> | Date | string
+  frequency?: Prisma.StringNullableFilter<"Task"> | string | null
+  dailyDescription?: Prisma.StringNullableFilter<"Task"> | string | null
   project?: Prisma.XOR<Prisma.ProjectNullableScalarRelationFilter, Prisma.ProjectWhereInput> | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   members?: Prisma.TaskMemberListRelationFilter
@@ -358,6 +374,8 @@ export type TaskOrderByWithRelationInput = {
   isArchived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  frequency?: Prisma.SortOrderInput | Prisma.SortOrder
+  dailyDescription?: Prisma.SortOrderInput | Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
   members?: Prisma.TaskMemberOrderByRelationAggregateInput
@@ -387,6 +405,8 @@ export type TaskWhereUniqueInput = Prisma.AtLeast<{
   isArchived?: Prisma.BoolFilter<"Task"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Task"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Task"> | Date | string
+  frequency?: Prisma.StringNullableFilter<"Task"> | string | null
+  dailyDescription?: Prisma.StringNullableFilter<"Task"> | string | null
   project?: Prisma.XOR<Prisma.ProjectNullableScalarRelationFilter, Prisma.ProjectWhereInput> | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   members?: Prisma.TaskMemberListRelationFilter
@@ -413,6 +433,8 @@ export type TaskOrderByWithAggregationInput = {
   isArchived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  frequency?: Prisma.SortOrderInput | Prisma.SortOrder
+  dailyDescription?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.TaskCountOrderByAggregateInput
   _avg?: Prisma.TaskAvgOrderByAggregateInput
   _max?: Prisma.TaskMaxOrderByAggregateInput
@@ -441,6 +463,8 @@ export type TaskScalarWhereWithAggregatesInput = {
   isArchived?: Prisma.BoolWithAggregatesFilter<"Task"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Task"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Task"> | Date | string
+  frequency?: Prisma.StringNullableWithAggregatesFilter<"Task"> | string | null
+  dailyDescription?: Prisma.StringNullableWithAggregatesFilter<"Task"> | string | null
 }
 
 export type TaskCreateInput = {
@@ -458,6 +482,8 @@ export type TaskCreateInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   project?: Prisma.ProjectCreateNestedOneWithoutTasksInput
   user: Prisma.UserCreateNestedOneWithoutTasksInput
   members?: Prisma.TaskMemberCreateNestedManyWithoutTaskInput
@@ -484,6 +510,8 @@ export type TaskUncheckedCreateInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   members?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutTaskInput
   reports?: Prisma.ReportUncheckedCreateNestedManyWithoutTaskInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutTaskInput
@@ -505,6 +533,8 @@ export type TaskUpdateInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   project?: Prisma.ProjectUpdateOneWithoutTasksNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutTasksNestedInput
   members?: Prisma.TaskMemberUpdateManyWithoutTaskNestedInput
@@ -531,6 +561,8 @@ export type TaskUncheckedUpdateInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   members?: Prisma.TaskMemberUncheckedUpdateManyWithoutTaskNestedInput
   reports?: Prisma.ReportUncheckedUpdateManyWithoutTaskNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutTaskNestedInput
@@ -555,6 +587,8 @@ export type TaskCreateManyInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
 }
 
 export type TaskUpdateManyMutationInput = {
@@ -572,6 +606,8 @@ export type TaskUpdateManyMutationInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TaskUncheckedUpdateManyInput = {
@@ -592,6 +628,8 @@ export type TaskUncheckedUpdateManyInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TaskListRelationFilter = {
@@ -622,6 +660,8 @@ export type TaskCountOrderByAggregateInput = {
   isArchived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  frequency?: Prisma.SortOrder
+  dailyDescription?: Prisma.SortOrder
 }
 
 export type TaskAvgOrderByAggregateInput = {
@@ -651,6 +691,8 @@ export type TaskMaxOrderByAggregateInput = {
   isArchived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  frequency?: Prisma.SortOrder
+  dailyDescription?: Prisma.SortOrder
 }
 
 export type TaskMinOrderByAggregateInput = {
@@ -671,6 +713,8 @@ export type TaskMinOrderByAggregateInput = {
   isArchived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  frequency?: Prisma.SortOrder
+  dailyDescription?: Prisma.SortOrder
 }
 
 export type TaskSumOrderByAggregateInput = {
@@ -877,6 +921,8 @@ export type TaskCreateWithoutUserInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   project?: Prisma.ProjectCreateNestedOneWithoutTasksInput
   members?: Prisma.TaskMemberCreateNestedManyWithoutTaskInput
   reports?: Prisma.ReportCreateNestedManyWithoutTaskInput
@@ -901,6 +947,8 @@ export type TaskUncheckedCreateWithoutUserInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   members?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutTaskInput
   reports?: Prisma.ReportUncheckedCreateNestedManyWithoutTaskInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutTaskInput
@@ -953,6 +1001,8 @@ export type TaskScalarWhereInput = {
   isArchived?: Prisma.BoolFilter<"Task"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Task"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Task"> | Date | string
+  frequency?: Prisma.StringNullableFilter<"Task"> | string | null
+  dailyDescription?: Prisma.StringNullableFilter<"Task"> | string | null
 }
 
 export type TaskCreateWithoutMembersInput = {
@@ -970,6 +1020,8 @@ export type TaskCreateWithoutMembersInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   project?: Prisma.ProjectCreateNestedOneWithoutTasksInput
   user: Prisma.UserCreateNestedOneWithoutTasksInput
   reports?: Prisma.ReportCreateNestedManyWithoutTaskInput
@@ -995,6 +1047,8 @@ export type TaskUncheckedCreateWithoutMembersInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   reports?: Prisma.ReportUncheckedCreateNestedManyWithoutTaskInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutTaskInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutTaskInput
@@ -1031,6 +1085,8 @@ export type TaskUpdateWithoutMembersInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   project?: Prisma.ProjectUpdateOneWithoutTasksNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutTasksNestedInput
   reports?: Prisma.ReportUpdateManyWithoutTaskNestedInput
@@ -1056,6 +1112,8 @@ export type TaskUncheckedUpdateWithoutMembersInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reports?: Prisma.ReportUncheckedUpdateManyWithoutTaskNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutTaskNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutTaskNestedInput
@@ -1076,6 +1134,8 @@ export type TaskCreateWithoutProjectInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   user: Prisma.UserCreateNestedOneWithoutTasksInput
   members?: Prisma.TaskMemberCreateNestedManyWithoutTaskInput
   reports?: Prisma.ReportCreateNestedManyWithoutTaskInput
@@ -1100,6 +1160,8 @@ export type TaskUncheckedCreateWithoutProjectInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   members?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutTaskInput
   reports?: Prisma.ReportUncheckedCreateNestedManyWithoutTaskInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutTaskInput
@@ -1146,6 +1208,8 @@ export type TaskCreateWithoutReportsInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   project?: Prisma.ProjectCreateNestedOneWithoutTasksInput
   user: Prisma.UserCreateNestedOneWithoutTasksInput
   members?: Prisma.TaskMemberCreateNestedManyWithoutTaskInput
@@ -1171,6 +1235,8 @@ export type TaskUncheckedCreateWithoutReportsInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   members?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutTaskInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutTaskInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutTaskInput
@@ -1207,6 +1273,8 @@ export type TaskUpdateWithoutReportsInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   project?: Prisma.ProjectUpdateOneWithoutTasksNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutTasksNestedInput
   members?: Prisma.TaskMemberUpdateManyWithoutTaskNestedInput
@@ -1232,6 +1300,8 @@ export type TaskUncheckedUpdateWithoutReportsInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   members?: Prisma.TaskMemberUncheckedUpdateManyWithoutTaskNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutTaskNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutTaskNestedInput
@@ -1252,6 +1322,8 @@ export type TaskCreateWithoutReviewsInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   project?: Prisma.ProjectCreateNestedOneWithoutTasksInput
   user: Prisma.UserCreateNestedOneWithoutTasksInput
   members?: Prisma.TaskMemberCreateNestedManyWithoutTaskInput
@@ -1277,6 +1349,8 @@ export type TaskUncheckedCreateWithoutReviewsInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   members?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutTaskInput
   reports?: Prisma.ReportUncheckedCreateNestedManyWithoutTaskInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutTaskInput
@@ -1313,6 +1387,8 @@ export type TaskUpdateWithoutReviewsInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   project?: Prisma.ProjectUpdateOneWithoutTasksNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutTasksNestedInput
   members?: Prisma.TaskMemberUpdateManyWithoutTaskNestedInput
@@ -1338,6 +1414,8 @@ export type TaskUncheckedUpdateWithoutReviewsInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   members?: Prisma.TaskMemberUncheckedUpdateManyWithoutTaskNestedInput
   reports?: Prisma.ReportUncheckedUpdateManyWithoutTaskNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutTaskNestedInput
@@ -1358,6 +1436,8 @@ export type TaskCreateWithoutAchievementsInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   project?: Prisma.ProjectCreateNestedOneWithoutTasksInput
   user: Prisma.UserCreateNestedOneWithoutTasksInput
   members?: Prisma.TaskMemberCreateNestedManyWithoutTaskInput
@@ -1383,6 +1463,8 @@ export type TaskUncheckedCreateWithoutAchievementsInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
   members?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutTaskInput
   reports?: Prisma.ReportUncheckedCreateNestedManyWithoutTaskInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutTaskInput
@@ -1419,6 +1501,8 @@ export type TaskUpdateWithoutAchievementsInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   project?: Prisma.ProjectUpdateOneWithoutTasksNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutTasksNestedInput
   members?: Prisma.TaskMemberUpdateManyWithoutTaskNestedInput
@@ -1444,6 +1528,8 @@ export type TaskUncheckedUpdateWithoutAchievementsInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   members?: Prisma.TaskMemberUncheckedUpdateManyWithoutTaskNestedInput
   reports?: Prisma.ReportUncheckedUpdateManyWithoutTaskNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutTaskNestedInput
@@ -1466,6 +1552,8 @@ export type TaskCreateManyUserInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
 }
 
 export type TaskUpdateWithoutUserInput = {
@@ -1483,6 +1571,8 @@ export type TaskUpdateWithoutUserInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   project?: Prisma.ProjectUpdateOneWithoutTasksNestedInput
   members?: Prisma.TaskMemberUpdateManyWithoutTaskNestedInput
   reports?: Prisma.ReportUpdateManyWithoutTaskNestedInput
@@ -1507,6 +1597,8 @@ export type TaskUncheckedUpdateWithoutUserInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   members?: Prisma.TaskMemberUncheckedUpdateManyWithoutTaskNestedInput
   reports?: Prisma.ReportUncheckedUpdateManyWithoutTaskNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutTaskNestedInput
@@ -1530,6 +1622,8 @@ export type TaskUncheckedUpdateManyWithoutUserInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TaskCreateManyProjectInput = {
@@ -1549,6 +1643,8 @@ export type TaskCreateManyProjectInput = {
   isArchived?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  frequency?: string | null
+  dailyDescription?: string | null
 }
 
 export type TaskUpdateWithoutProjectInput = {
@@ -1566,6 +1662,8 @@ export type TaskUpdateWithoutProjectInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutTasksNestedInput
   members?: Prisma.TaskMemberUpdateManyWithoutTaskNestedInput
   reports?: Prisma.ReportUpdateManyWithoutTaskNestedInput
@@ -1590,6 +1688,8 @@ export type TaskUncheckedUpdateWithoutProjectInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   members?: Prisma.TaskMemberUncheckedUpdateManyWithoutTaskNestedInput
   reports?: Prisma.ReportUncheckedUpdateManyWithoutTaskNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutTaskNestedInput
@@ -1613,6 +1713,8 @@ export type TaskUncheckedUpdateManyWithoutProjectInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frequency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dailyDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -1691,6 +1793,8 @@ export type TaskSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   isArchived?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  frequency?: boolean
+  dailyDescription?: boolean
   project?: boolean | Prisma.Task$projectArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   members?: boolean | Prisma.Task$membersArgs<ExtArgs>
@@ -1718,6 +1822,8 @@ export type TaskSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   isArchived?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  frequency?: boolean
+  dailyDescription?: boolean
   project?: boolean | Prisma.Task$projectArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["task"]>
@@ -1740,6 +1846,8 @@ export type TaskSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   isArchived?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  frequency?: boolean
+  dailyDescription?: boolean
   project?: boolean | Prisma.Task$projectArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["task"]>
@@ -1762,9 +1870,11 @@ export type TaskSelectScalar = {
   isArchived?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  frequency?: boolean
+  dailyDescription?: boolean
 }
 
-export type TaskOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "status" | "priority" | "targetQuantity" | "unit" | "completedQuantity" | "hoursPerUnit" | "startTime" | "endTime" | "description" | "projectId" | "userId" | "isArchived" | "createdAt" | "updatedAt", ExtArgs["result"]["task"]>
+export type TaskOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "status" | "priority" | "targetQuantity" | "unit" | "completedQuantity" | "hoursPerUnit" | "startTime" | "endTime" | "description" | "projectId" | "userId" | "isArchived" | "createdAt" | "updatedAt" | "frequency" | "dailyDescription", ExtArgs["result"]["task"]>
 export type TaskInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.Task$projectArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1811,6 +1921,8 @@ export type $TaskPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     isArchived: boolean
     createdAt: Date
     updatedAt: Date
+    frequency: string | null
+    dailyDescription: string | null
   }, ExtArgs["result"]["task"]>
   composites: {}
 }
@@ -2257,6 +2369,8 @@ export interface TaskFieldRefs {
   readonly isArchived: Prisma.FieldRef<"Task", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Task", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Task", 'DateTime'>
+  readonly frequency: Prisma.FieldRef<"Task", 'String'>
+  readonly dailyDescription: Prisma.FieldRef<"Task", 'String'>
 }
     
 

@@ -62,7 +62,7 @@ export async function getTasks(req: Request, res: Response) {
 
 export async function createTask(req: Request, res: Response) {
   try {
-    const { name, type, status, priority, targetQuantity, unit, completedQuantity, hoursPerUnit, startTime, endTime, description, projectId, userId, members } = req.body
+    const { name, type, status, priority, targetQuantity, unit, completedQuantity, hoursPerUnit, startTime, endTime, description, projectId, userId, members, frequency, dailyDescription } = req.body
     
     const task = await prisma.task.create({
       data: {
@@ -78,7 +78,9 @@ export async function createTask(req: Request, res: Response) {
         endTime: endTime ? new Date(endTime) : undefined,
         description,
         projectId: projectId || undefined,
-        userId
+        userId,
+        frequency: frequency || undefined,
+        dailyDescription: dailyDescription || undefined
       },
       include: {
         user: { include: { department: true } },
@@ -146,7 +148,7 @@ export async function createTask(req: Request, res: Response) {
 export async function updateTask(req: Request, res: Response) {
   try {
     const { id } = req.params
-    const { name, type, status, priority, targetQuantity, unit, completedQuantity, hoursPerUnit, startTime, endTime, description, projectId, isArchived, members } = req.body
+    const { name, type, status, priority, targetQuantity, unit, completedQuantity, hoursPerUnit, startTime, endTime, description, projectId, isArchived, members, userId, frequency, dailyDescription } = req.body
     
     const data: any = {
       name,
@@ -161,7 +163,10 @@ export async function updateTask(req: Request, res: Response) {
       endTime: endTime ? new Date(endTime) : undefined,
       description,
       projectId: projectId || undefined,
-      isArchived
+      isArchived,
+      userId: userId ? parseInt(userId) : undefined,
+      frequency: frequency || undefined,
+      dailyDescription: dailyDescription || undefined
     }
     
     const task = await prisma.task.update({
@@ -177,13 +182,57 @@ export async function updateTask(req: Request, res: Response) {
         })
       }
     }
+
+    const updatedTask = await prisma.task.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        user: { include: { department: true } },
+        project: true,
+        members: { include: { user: { include: { department: true } } } }
+      }
+    })
     
-    res.json(task)
+    res.json({
+      ...updatedTask,
+      user: updatedTask?.user ? {
+        id: updatedTask.user.id,
+        username: updatedTask.user.username,
+        nickname: updatedTask.user.nickname,
+        departmentId: updatedTask.user.departmentId,
+        department: updatedTask.user.department?.name || '',
+        createdAt: updatedTask.user.createdAt,
+        updatedAt: updatedTask.user.updatedAt
+      } : null,
+      project: updatedTask?.project ? {
+        id: updatedTask.project.id,
+        name: updatedTask.project.name,
+        description: updatedTask.project.description,
+        icon: updatedTask.project.icon,
+        status: updatedTask.project.status,
+        managerId: updatedTask.project.managerId,
+        isArchived: updatedTask.project.isArchived,
+        createdAt: updatedTask.project.createdAt,
+        updatedAt: updatedTask.project.updatedAt
+      } : null,
+      members: updatedTask?.members.map(member => ({
+        ...member,
+        user: member.user ? {
+          id: member.user.id,
+          username: member.user.username,
+          nickname: member.user.nickname,
+          departmentId: member.user.departmentId,
+          department: member.user.department?.name || '',
+          createdAt: member.user.createdAt,
+          updatedAt: member.user.updatedAt
+        } : null
+      })) || []
+    })
   } catch (error: any) {
     if (error.code === 'P2025') {
       res.status(404).json({ message: '任务不存在' })
     } else {
-      res.status(500).json({ message: '服务器内部错误' })
+      console.error('updateTask error:', error.message || error)
+      res.status(500).json({ message: '服务器内部错误', detail: error.message })
     }
   }
 }

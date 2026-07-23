@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,6 +13,7 @@ import { getProjects, getProject, deleteProject, createProject, updateProject } 
 import { getUsers } from '@/api/user'
 import { getTasks, createTask, updateTask, deleteTask } from '@/api/task'
 import type { Project } from '@/types'
+import { getTaskProgress as calcTaskProgress, getTaskTotalTarget } from '@/lib/utils'
 
 export default function ProjectManagement() {
   const [loading, setLoading] = useState(true)
@@ -55,6 +56,8 @@ export default function ProjectManagement() {
     startTime: string
     endTime: string
     members: number[]
+    frequency?: string
+    dailyDescription?: string
   }>({
     id: undefined,
     name: '',
@@ -70,6 +73,8 @@ export default function ProjectManagement() {
     startTime: '',
     endTime: '',
     members: [] as number[],
+    frequency: '每日',
+    dailyDescription: '',
   })
   const [tasks, setTasks] = useState<{
     id?: number
@@ -86,6 +91,8 @@ export default function ProjectManagement() {
     startTime: string
     endTime: string
     members: number[]
+    frequency?: string
+    dailyDescription?: string
   }[]>([])
 
   const iconOptions = [
@@ -165,6 +172,8 @@ export default function ProjectManagement() {
               endTime: task.endTime || undefined,
               projectId: projectData.id,
               members: task.members,
+              frequency: task.frequency,
+              dailyDescription: task.dailyDescription,
             })
           }
         }
@@ -284,6 +293,8 @@ export default function ProjectManagement() {
             endTime: task.endTime || undefined,
             projectId: editingProjectId!,
             members: task.members,
+            frequency: task.frequency,
+            dailyDescription: task.dailyDescription,
           })
         }
       }
@@ -384,6 +395,8 @@ export default function ProjectManagement() {
           startTime: taskFormData.startTime || undefined,
           endTime: taskFormData.endTime || undefined,
           projectId: editingProjectId!,
+          frequency: taskFormData.frequency,
+          dailyDescription: taskFormData.dailyDescription,
         })
         
         const newTask = {
@@ -479,8 +492,7 @@ export default function ProjectManagement() {
     const tasks = project.tasks || []
     if (tasks.length === 0) return 0
     const total = tasks.reduce((sum: number, t: any) => {
-      const target = t.targetQuantity || 1
-      return sum + ((t.completedQuantity || 0) / target * 100)
+      return sum + calcTaskProgress(t)
     }, 0)
     return Math.round(total / tasks.length)
   }
@@ -491,8 +503,7 @@ export default function ProjectManagement() {
   }
 
   const getTaskProgress = (task: any) => {
-    if (!task.targetQuantity || task.targetQuantity === 0) return 0
-    return Math.round((task.completedQuantity / task.targetQuantity) * 100)
+    return calcTaskProgress(task)
   }
 
   if (loading) {
@@ -750,7 +761,7 @@ export default function ProjectManagement() {
                         </div>
                         <div className="flex items-center gap-3 text-xs text-slate-500">
                           <span>负责人：{task.userId ? getUserName(task.userId) : '未分配'}</span>
-                          <span>进度：{task.completedQuantity}/{task.targetQuantity}{task.unit} ({getTaskProgress(task)}%)</span>
+                          <span>进度：{task.completedQuantity}/{getTaskTotalTarget(task)}{task.unit} ({getTaskProgress(task)}%)</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
@@ -944,7 +955,7 @@ export default function ProjectManagement() {
                         </div>
                         <div className="flex items-center gap-3 text-xs text-slate-500">
                           <span>负责人：{task.userId ? getUserName(task.userId) : '未分配'}</span>
-                          <span>进度：{task.completedQuantity}/{task.targetQuantity}{task.unit} ({getTaskProgress(task)}%)</span>
+                          <span>进度：{task.completedQuantity}/{getTaskTotalTarget(task)}{task.unit} ({getTaskProgress(task)}%)</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +14,7 @@ import { getUsers } from '@/api/user'
 import { getProjects } from '@/api/project'
 import { getSettings } from '@/api/setting'
 import type { Task } from '@/types'
+import { getTaskProgress as calcTaskProgress, getTaskTotalTarget } from '@/lib/utils'
 
 export default function TaskManagement() {
   const [loading, setLoading] = useState(true)
@@ -40,6 +41,8 @@ export default function TaskManagement() {
     endTime: '',
     projectId: '',
     members: [] as number[],
+    frequency: '每日' as '每日' | '每周' | '每月',
+    dailyDescription: '',
   })
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
@@ -117,10 +120,12 @@ export default function TaskManagement() {
         endTime: formData.endTime,
         projectId: formData.projectId ? parseInt(formData.projectId) : undefined,
         members: formData.members,
+        frequency: formData.frequency,
+        dailyDescription: formData.dailyDescription,
       })
       addTask(newTask)
       setShowCreateDialog(false)
-      setFormData({ name: '', description: '', type: '项目任务', priority: 'P2', status: '进行中', userId: '', targetQuantity: 100, unit: '个', completedQuantity: 0, hoursPerUnit: 1, startTime: '', endTime: '', projectId: '', members: [] })
+      setFormData({ name: '', description: '', type: '项目任务', priority: 'P2', status: '进行中', userId: '', targetQuantity: 100, unit: '个', completedQuantity: 0, hoursPerUnit: 1, startTime: '', endTime: '', projectId: '', members: [], frequency: '每日', dailyDescription: '' })
     } catch (error) {
       console.error('Failed to create task:', error)
     }
@@ -143,6 +148,8 @@ export default function TaskManagement() {
       endTime: task.endTime ? new Date(task.endTime).toISOString().split('T')[0] : '',
       projectId: task.projectId?.toString() || '',
       members: memberIds,
+      frequency: (task as any).frequency || '每日',
+      dailyDescription: (task as any).dailyDescription || '',
     })
     setEditingTaskId(task.id)
     setShowEditDialog(true)
@@ -165,6 +172,8 @@ export default function TaskManagement() {
         endTime: formData.endTime,
         projectId: formData.projectId ? parseInt(formData.projectId) : undefined,
         members: formData.members,
+        frequency: formData.frequency,
+        dailyDescription: formData.dailyDescription,
       })
       setTasks(tasks.map(t => t.id === editingTaskId ? updatedTask : t))
       setShowEditDialog(false)
@@ -341,9 +350,7 @@ export default function TaskManagement() {
                       {isExpanded && (
                         <div className="divide-y divide-slate-700/30">
                           {groupData.tasks.map((task) => {
-                            const progress = task.targetQuantity 
-                              ? Math.round((task.completedQuantity / task.targetQuantity) * 100) 
-                              : 0
+                            const progress = calcTaskProgress(task)
                             
                             return (
                               <div key={task.id} className="flex items-center justify-between px-4 py-3 hover:bg-slate-800/20 transition-colors">
@@ -375,7 +382,7 @@ export default function TaskManagement() {
                                     </div>
                                   </div>
                                   
-                                  <span className="text-xs text-slate-500 min-w-[60px]">{task.completedQuantity}/{task.targetQuantity}</span>
+                                  <span className="text-xs text-slate-500 min-w-[60px]">{task.completedQuantity}/{getTaskTotalTarget(task)}</span>
                                   
                                   <Button 
                                     variant="ghost" 
@@ -569,47 +576,93 @@ export default function TaskManagement() {
               </div>
             </div>
             
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-400">量化</label>
-              <div className="grid grid-cols-4 gap-2">
-                <div className="space-y-1">
-                  <span className="text-xs text-slate-500">目标数量</span>
+            {formData.type === '日常任务' ? (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-400">量化</label>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm text-slate-400">每</span>
+                  <select
+                    value={formData.frequency}
+                    onChange={(e) => setFormData({ ...formData, frequency: e.target.value as '每日' | '每周' | '每月' })}
+                    className="h-9 px-2 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                  >
+                    <option value="每日">日</option>
+                    <option value="每周">周</option>
+                    <option value="每月">月</option>
+                  </select>
+                  <span className="text-sm text-slate-400">完成</span>
+                  <Input
+                    value={formData.dailyDescription}
+                    onChange={(e) => setFormData({ ...formData, dailyDescription: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white flex-1 min-w-[150px]"
+                    placeholder="文字描述"
+                  />
                   <Input
                     type="number"
                     value={formData.targetQuantity}
                     onChange={(e) => setFormData({ ...formData, targetQuantity: parseInt(e.target.value) || 0 })}
-                    className="bg-slate-800 border-slate-700 text-white text-center"
+                    className="bg-slate-800 border-slate-700 text-white w-20 text-center"
                   />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs text-slate-500">单位</span>
                   <Input
                     value={formData.unit}
                     onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white text-center"
-                    placeholder="个"
+                    className="bg-slate-800 border-slate-700 text-white w-16 text-center"
+                    placeholder="单位"
                   />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs text-slate-500">已完成</span>
+                  <span className="text-sm text-slate-400">，预计</span>
                   <Input
                     type="number"
-                    value={formData.completedQuantity}
-                    onChange={(e) => setFormData({ ...formData, completedQuantity: parseInt(e.target.value) || 0 })}
-                    className="bg-slate-800 border-slate-700 text-white text-center"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs text-slate-500">工时/单位</span>
-                  <Input
-                    type="number"
+                    step="0.5"
                     value={formData.hoursPerUnit}
-                    onChange={(e) => setFormData({ ...formData, hoursPerUnit: parseFloat(e.target.value) || 0 })}
-                    className="bg-slate-800 border-slate-700 text-white text-center"
+                    onChange={(e) => setFormData({ ...formData, hoursPerUnit: parseFloat(e.target.value) || 1 })}
+                    className="bg-slate-800 border-slate-700 text-white w-16 text-center"
                   />
+                  <span className="text-sm text-slate-400">工时/单位</span>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-400">量化</label>
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">目标数量</span>
+                    <Input
+                      type="number"
+                      value={formData.targetQuantity}
+                      onChange={(e) => setFormData({ ...formData, targetQuantity: parseInt(e.target.value) || 0 })}
+                      className="bg-slate-800 border-slate-700 text-white text-center"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">单位</span>
+                    <Input
+                      value={formData.unit}
+                      onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white text-center"
+                      placeholder="个"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">已完成</span>
+                    <Input
+                      type="number"
+                      value={formData.completedQuantity}
+                      onChange={(e) => setFormData({ ...formData, completedQuantity: parseInt(e.target.value) || 0 })}
+                      className="bg-slate-800 border-slate-700 text-white text-center"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">工时/单位</span>
+                    <Input
+                      type="number"
+                      value={formData.hoursPerUnit}
+                      onChange={(e) => setFormData({ ...formData, hoursPerUnit: parseFloat(e.target.value) || 0 })}
+                      className="bg-slate-800 border-slate-700 text-white text-center"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           
           <DialogFooter>
@@ -770,47 +823,93 @@ export default function TaskManagement() {
               </div>
             </div>
             
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-400">量化</label>
-              <div className="grid grid-cols-4 gap-2">
-                <div className="space-y-1">
-                  <span className="text-xs text-slate-500">目标数量</span>
+            {formData.type === '日常任务' ? (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-400">量化</label>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm text-slate-400">每</span>
+                  <select
+                    value={formData.frequency}
+                    onChange={(e) => setFormData({ ...formData, frequency: e.target.value as '每日' | '每周' | '每月' })}
+                    className="h-9 px-2 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                  >
+                    <option value="每日">日</option>
+                    <option value="每周">周</option>
+                    <option value="每月">月</option>
+                  </select>
+                  <span className="text-sm text-slate-400">完成</span>
+                  <Input
+                    value={formData.dailyDescription}
+                    onChange={(e) => setFormData({ ...formData, dailyDescription: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white flex-1 min-w-[150px]"
+                    placeholder="文字描述"
+                  />
                   <Input
                     type="number"
                     value={formData.targetQuantity}
                     onChange={(e) => setFormData({ ...formData, targetQuantity: parseInt(e.target.value) || 0 })}
-                    className="bg-slate-800 border-slate-700 text-white text-center"
+                    className="bg-slate-800 border-slate-700 text-white w-20 text-center"
                   />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs text-slate-500">单位</span>
                   <Input
                     value={formData.unit}
                     onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white text-center"
-                    placeholder="个"
+                    className="bg-slate-800 border-slate-700 text-white w-16 text-center"
+                    placeholder="单位"
                   />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs text-slate-500">已完成</span>
+                  <span className="text-sm text-slate-400">，预计</span>
                   <Input
                     type="number"
-                    value={formData.completedQuantity}
-                    onChange={(e) => setFormData({ ...formData, completedQuantity: parseInt(e.target.value) || 0 })}
-                    className="bg-slate-800 border-slate-700 text-white text-center"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs text-slate-500">工时/单位</span>
-                  <Input
-                    type="number"
+                    step="0.5"
                     value={formData.hoursPerUnit}
-                    onChange={(e) => setFormData({ ...formData, hoursPerUnit: parseFloat(e.target.value) || 0 })}
-                    className="bg-slate-800 border-slate-700 text-white text-center"
+                    onChange={(e) => setFormData({ ...formData, hoursPerUnit: parseFloat(e.target.value) || 1 })}
+                    className="bg-slate-800 border-slate-700 text-white w-16 text-center"
                   />
+                  <span className="text-sm text-slate-400">工时/单位</span>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-400">量化</label>
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">目标数量</span>
+                    <Input
+                      type="number"
+                      value={formData.targetQuantity}
+                      onChange={(e) => setFormData({ ...formData, targetQuantity: parseInt(e.target.value) || 0 })}
+                      className="bg-slate-800 border-slate-700 text-white text-center"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">单位</span>
+                    <Input
+                      value={formData.unit}
+                      onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white text-center"
+                      placeholder="个"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">已完成</span>
+                    <Input
+                      type="number"
+                      value={formData.completedQuantity}
+                      onChange={(e) => setFormData({ ...formData, completedQuantity: parseInt(e.target.value) || 0 })}
+                      className="bg-slate-800 border-slate-700 text-white text-center"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">工时/单位</span>
+                    <Input
+                      type="number"
+                      value={formData.hoursPerUnit}
+                      onChange={(e) => setFormData({ ...formData, hoursPerUnit: parseFloat(e.target.value) || 0 })}
+                      className="bg-slate-800 border-slate-700 text-white text-center"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           
           <DialogFooter>

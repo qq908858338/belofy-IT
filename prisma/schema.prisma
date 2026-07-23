@@ -55,6 +55,8 @@ model Task {
   isArchived      Boolean   @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  frequency       String?
+  dailyDescription String?
   
   project         Project?  @relation(fields: [projectId], references: [id])
   user            User      @relation(fields: [userId], references: [id])
