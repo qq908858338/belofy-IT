@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -399,7 +399,6 @@ export default function TaskManagement() {
                                       variant="ghost" 
                                       size="icon" 
                                       className="text-slate-500 hover:text-red-400 hover:bg-red-500/10"
-                                      onClick={(e) => e.stopPropagation()}
                                     >
                                       <Trash2 className="w-4 h-4" />
                                     </Button>
