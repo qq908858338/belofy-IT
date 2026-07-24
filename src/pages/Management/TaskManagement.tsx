@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -25,6 +25,7 @@ export default function TaskManagement() {
   const { token } = useAuthStore()
   const { tasks, setTasks, deleteTask: removeTask, addTask } = useTaskStore()
   const { settings, setSettings } = useSettingStore()
+  const workDaysPerMonth = parseInt(settings.workDaysPerMonth) || 22
 
   const [formData, setFormData] = useState({
     name: '',
@@ -350,7 +351,7 @@ export default function TaskManagement() {
                       {isExpanded && (
                         <div className="divide-y divide-slate-700/30">
                           {groupData.tasks.map((task) => {
-                            const progress = calcTaskProgress(task)
+                            const progress = calcTaskProgress(task, workDaysPerMonth)
                             
                             return (
                               <div key={task.id} className="flex items-center justify-between px-4 py-3 hover:bg-slate-800/20 transition-colors">
@@ -382,7 +383,7 @@ export default function TaskManagement() {
                                     </div>
                                   </div>
                                   
-                                  <span className="text-xs text-slate-500 min-w-[60px]">{task.completedQuantity}/{getTaskTotalTarget(task)}</span>
+                                  <span className="text-xs text-slate-500 min-w-[60px]">{task.completedQuantity}/{getTaskTotalTarget(task, workDaysPerMonth)}</span>
                                   
                                   <Button 
                                     variant="ghost" 

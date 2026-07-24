@@ -64,7 +64,6 @@ export const MENU_ITEMS: MenuItem[] = [
     children: [
       { id: 'today', name: '今日日报', path: '/dashboard/daily-report/today' },
       { id: 'yesterday', name: '补登昨日', path: '/dashboard/daily-report/yesterday' },
-      { id: 'temp-task', name: '新建临时任务', path: '/dashboard/daily-report/temp-task' },
     ],
   },
   {

@@ -11,6 +11,7 @@ import { getTasks, createTask, updateTask } from '@/api/task'
 import { getUsers } from '@/api/user'
 import type { Task } from '@/types'
 import { getTaskProgress as calcTaskProgress, getTaskTotalTarget } from '@/lib/utils'
+import { useSettingStore } from '@/store/settingStore'
 
 export default function TodayReport() {
   const [loading, setLoading] = useState(true)
@@ -21,6 +22,19 @@ export default function TodayReport() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [users, setUsers] = useState<any[]>([])
   const [updatedTaskIds, setUpdatedTaskIds] = useState<number[]>([])
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [submittedData, setSubmittedData] = useState<Record<number, {
+    todayCompleted: number
+    todayHours: number
+    blocker: string
+    helpers: number[]
+    attachments: { id: string; type: string; name: string; url?: string }[]
+    resultDesc: string
+  }>>({})
+  
+  const { settings } = useSettingStore()
+  const workDaysPerMonth = parseInt(settings.workDaysPerMonth) || 22
   
   const [progressForm, setProgressForm] = useState({
     todayCompleted: 0,
@@ -179,7 +193,19 @@ export default function TodayReport() {
   }
 
   const handleSubmit = () => {
-    alert('日报提交成功')
+    if (updatedTaskIds.length === 0) {
+      alert('暂无已更新的任务，请先更新任务进度')
+      return
+    }
+    setShowSubmitDialog(true)
+  }
+
+  const confirmSubmitReport = () => {
+    setShowSubmitDialog(false)
+    setUpdatedTaskIds([])
+    setSubmittedData({})
+    setShowSuccessDialog(true)
+    setTimeout(() => setShowSuccessDialog(false), 2000)
   }
 
   const openProgressDialog = (task: Task) => {
@@ -209,6 +235,17 @@ export default function TodayReport() {
       })
       
       setUpdatedTaskIds(prev => prev.includes(editingTask.id) ? prev : [...prev, editingTask.id])
+      setSubmittedData(prev => ({
+        ...prev,
+        [editingTask.id]: {
+          todayCompleted: progressForm.todayCompleted,
+          todayHours: progressForm.todayHours,
+          blocker: progressForm.blocker,
+          helpers: progressForm.helpers,
+          attachments: [...attachments],
+          resultDesc: progressForm.resultDesc,
+        }
+      }))
       setShowProgressDialog(false)
       setEditingTask(null)
       fetchTasks()
@@ -834,7 +871,7 @@ export default function TodayReport() {
                     {isExpanded && (
                       <div className="divide-y divide-slate-700/30">
                         {groupData.tasks.map((task) => {
-                          const progress = calcTaskProgress(task)
+                          const progress = calcTaskProgress(task, workDaysPerMonth)
                           
                           return (
                             <div key={task.id} className="flex items-center justify-between px-4 py-3 hover:bg-slate-800/20 transition-colors">
@@ -866,7 +903,7 @@ export default function TodayReport() {
                                   </div>
                                 </div>
                                 
-                                <span className="text-xs text-slate-500 min-w-[60px]">{task.completedQuantity}/{getTaskTotalTarget(task)}</span>
+                                <span className="text-xs text-slate-500 min-w-[60px]">{task.completedQuantity}/{getTaskTotalTarget(task, workDaysPerMonth)}</span>
                                 
                                 <Button 
                                   variant="ghost" 
@@ -1080,7 +1117,7 @@ export default function TodayReport() {
             <DialogTitle className="text-white text-lg">
               {editingTask?.name}
               <span className="text-sm font-normal text-slate-400 ml-2">
-                进度：{editingTask?.completedQuantity || 0}/{editingTask ? getTaskTotalTarget(editingTask) : 0} {editingTask?.unit}
+                进度：{editingTask?.completedQuantity || 0}/{editingTask ? getTaskTotalTarget(editingTask, workDaysPerMonth) : 0} {editingTask?.unit}
               </span>
             </DialogTitle>
           </DialogHeader>
@@ -1287,25 +1324,26 @@ export default function TodayReport() {
                 </div>
               )}
               
+              {uploadProgress && (
+                <div className="mt-3 p-3 bg-slate-800/80 rounded-lg border border-blue-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-slate-300 truncate mr-2">
+                      正在处理: {uploadProgress.file}
+                    </span>
+                    <span className="text-xs text-blue-400 whitespace-nowrap">{uploadProgress.progress}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                      style={{ width: `${uploadProgress.progress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">{uploadProgress.status}</p>
+                </div>
+              )}
+              
               {attachments.length > 0 && (
                 <div className="mt-3 space-y-2">
-                  {uploadProgress && (
-                    <div className="p-3 bg-slate-800/80 rounded-lg border border-blue-500/30">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-slate-300 truncate mr-2">
-                          正在处理: {uploadProgress.file}
-                        </span>
-                        <span className="text-xs text-blue-400 whitespace-nowrap">{uploadProgress.progress}%</span>
-                      </div>
-                      <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
-                          style={{ width: `${uploadProgress.progress}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-slate-400 mt-1">{uploadProgress.status}</p>
-                    </div>
-                  )}
                   {attachments.map((att) => (
                     <div 
                       key={att.id}
@@ -1499,6 +1537,167 @@ export default function TodayReport() {
           <div className="px-8 py-4 bg-slate-800/95 border border-slate-600 rounded-lg shadow-2xl flex items-center justify-center gap-3 min-w-[220px]">
             <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
             <span className="text-sm text-slate-200 text-center">{docDownloadMsg}</span>
+          </div>
+        </div>
+      )}
+
+      <Dialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
+        <DialogContent className="sm:max-w-[600px] bg-slate-900 border-slate-700 max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex items-center">
+            <div className="flex items-center gap-3">
+              <DialogTitle className="text-xl font-bold text-white">日报</DialogTitle>
+              <span className="text-sm text-slate-400">{new Date().toLocaleDateString('zh-CN')}</span>
+            </div>
+          </DialogHeader>
+
+          <div className="bg-slate-800/50 rounded-lg px-4 py-3 flex items-center gap-4 text-sm flex-shrink-0">
+            <span className="text-slate-400">任务数 <span className="text-green-400 font-semibold">{updatedTaskIds.length}</span></span>
+            <span className="text-slate-600">|</span>
+            <span className="text-slate-400">总完成量 <span className="text-green-400 font-semibold">{updatedTaskIds.reduce((sum, id) => {
+              const task = tasks.find(t => t.id === id)
+              const data = submittedData[id]
+              return sum + (data?.todayCompleted || 0)
+            }, 0)}</span></span>
+            <span className="text-slate-600">|</span>
+            <span className="text-slate-400">总用时 <span className="text-green-400 font-semibold">{updatedTaskIds.reduce((sum, id) => {
+              const data = submittedData[id]
+              return sum + (data?.todayHours || 0)
+            }, 0)}h</span></span>
+          </div>
+
+          <div className="flex-1 overflow-y-auto space-y-4 py-4 pr-2">
+            {updatedTaskIds.map((taskId) => {
+              const task = tasks.find(t => t.id === taskId)
+              const data = submittedData[taskId]
+              if (!task || !data) return null
+
+              const progress = calcTaskProgress(task, workDaysPerMonth)
+              const totalTarget = getTaskTotalTarget(task, workDaysPerMonth)
+              const completedAfter = (task.completedQuantity || 0)
+              const progressPercent = totalTarget > 0 ? Math.round((completedAfter / totalTarget) * 100) : 0
+
+              const imageCount = data.attachments.filter(a => a.type === 'image').length
+              const videoCount = data.attachments.filter(a => a.type === 'video').length
+              const docCount = data.attachments.filter(a => a.type === 'document').length
+              const hasAttachments = imageCount > 0 || videoCount > 0 || docCount > 0
+              
+              return (
+                <div key={taskId} className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className={`w-2 h-2 rounded-full ${progress >= 80 ? 'bg-green-500' : progress >= 50 ? 'bg-yellow-500' : 'bg-blue-500'}`} />
+                    <span className="font-semibold text-white">{task.name}</span>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-sm mb-4">
+                    <span className="text-slate-400">今日完成 <span className="text-green-400 font-semibold">{data.todayCompleted}</span> {task.unit}，用时 <span className="text-green-400 font-semibold">{data.todayHours}h</span></span>
+                    <span className="text-slate-400">进度</span>
+                    <div className="flex-1 max-w-[120px] h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all ${progress >= 80 ? 'bg-green-500' : progress >= 50 ? 'bg-yellow-500' : 'bg-blue-500'}`}
+                        style={{ width: `${Math.min(progressPercent, 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-slate-400"><span className="text-white font-semibold">{completedAfter}</span> / {totalTarget}</span>
+                  </div>
+
+                  {data.blocker && (
+                    <div className="flex items-start gap-2 py-2 border-t border-slate-700/30">
+                      <span className="text-slate-500 text-sm whitespace-nowrap">协作需求</span>
+                      <span className="text-red-500 text-sm font-bold">{data.blocker || '无'}</span>
+                    </div>
+                  )}
+
+                  {data.helpers.length > 0 && (
+                    <div className="flex items-start gap-2 py-2 border-t border-slate-700/30">
+                      <span className="text-slate-500 text-sm whitespace-nowrap">获得协助</span>
+                      <div className="flex flex-wrap items-center">
+                        {data.helpers.map((hId, idx) => {
+                          const helper = users.find(u => u.id === hId)
+                          if (!helper) return null
+                          return (
+                            <span key={hId} className="flex items-center">
+                              {idx > 0 && <span className="text-slate-600 mx-1">、</span>}
+                              <span className="text-slate-200 text-sm">{helper.nickname}</span>
+                            </span>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {hasAttachments && (
+                    <div className="flex items-start gap-2 py-2 border-t border-slate-700/30">
+                      <span className="text-slate-500 text-sm whitespace-nowrap">成果栏</span>
+                      <div className="flex gap-2">
+                        {imageCount > 0 && (
+                          <div className="relative">
+                            <div className="w-12 h-10 bg-slate-700/50 border border-slate-600 rounded flex items-center justify-center">
+                              <Image className="w-4 h-4 text-slate-400" />
+                            </div>
+                            <span className="absolute -top-1 -right-1 bg-indigo-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{imageCount}</span>
+                            <span className="text-xs text-slate-500 block text-center mt-1">图片</span>
+                          </div>
+                        )}
+                        {videoCount > 0 && (
+                          <div className="relative">
+                            <div className="w-12 h-10 bg-slate-700/50 border border-slate-600 rounded flex items-center justify-center">
+                              <Video className="w-4 h-4 text-slate-400" />
+                            </div>
+                            <span className="absolute -top-1 -right-1 bg-indigo-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{videoCount}</span>
+                            <span className="text-xs text-slate-500 block text-center mt-1">视频</span>
+                          </div>
+                        )}
+                        {docCount > 0 && (
+                          <div className="relative">
+                            <div className="w-12 h-10 bg-slate-700/50 border border-slate-600 rounded flex items-center justify-center">
+                              <FileText className="w-4 h-4 text-slate-400" />
+                            </div>
+                            <span className="absolute -top-1 -right-1 bg-indigo-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{docCount}</span>
+                            <span className="text-xs text-slate-500 block text-center mt-1">文档</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {data.resultDesc && (
+                    <div className="flex items-start gap-2 py-2 border-t border-slate-700/30">
+                      <span className="text-slate-500 text-sm whitespace-nowrap">补充说明</span>
+                      <span className="text-slate-200 text-sm">{data.resultDesc}</span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-700 flex-shrink-0">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowSubmitDialog(false)}
+              className="bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+            >
+              取消
+            </Button>
+            <Button 
+              onClick={confirmSubmitReport} 
+              className="bg-indigo-600 hover:bg-indigo-500 text-white"
+            >
+              提交日报
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {showSuccessDialog && (
+        <div className="fixed inset-0 flex items-center justify-center z-[100] animate-fade-in">
+          <div className="bg-slate-900/95 border border-slate-700 rounded-xl shadow-2xl px-8 py-6 flex flex-col items-center gap-4 min-w-[200px]">
+            <div className="w-14 h-14 bg-green-500/20 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-white font-medium text-center">日报提交成功</p>
           </div>
         </div>
       )}

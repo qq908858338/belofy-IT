@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,12 +9,15 @@ import { useReportStore } from '@/store/reportStore'
 import { getDailyReports, deleteReport } from '@/api/report'
 import type { Report } from '@/types'
 import { getTaskProgress as calcTaskProgress, getTaskTotalTarget } from '@/lib/utils'
+import { useSettingStore } from '@/store/settingStore'
 
 export default function DailyReports() {
   const [loading, setLoading] = useState(true)
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
   const { token } = useAuthStore()
   const { dailyReports, setDailyReports, deleteReport: removeReport } = useReportStore()
+  const { settings } = useSettingStore()
+  const workDaysPerMonth = parseInt(settings.workDaysPerMonth) || 22
 
   useEffect(() => {
     fetchReports()
@@ -116,7 +119,7 @@ export default function DailyReports() {
                 {expandedGroups[userName] && (
                   <div className="divide-y divide-slate-700/30">
                     {reports.map((report) => {
-                      const progress = report.task ? calcTaskProgress(report.task) : 0
+                      const progress = report.task ? calcTaskProgress(report.task, workDaysPerMonth) : 0
                       
                       return (
                         <div key={report.id} className="flex items-center justify-between px-4 py-3 hover:bg-slate-800/20 transition-colors">
@@ -138,7 +141,7 @@ export default function DailyReports() {
                               </div>
                             </div>
                             
-                            <span className="text-xs text-slate-500 min-w-[80px]">{report.completedQuantity}/{report.task ? getTaskTotalTarget(report.task) : 0}</span>
+                            <span className="text-xs text-slate-500 min-w-[80px]">{report.completedQuantity}/{report.task ? getTaskTotalTarget(report.task, workDaysPerMonth) : 0}</span>
                             <span className="text-xs text-slate-500 min-w-[60px]">{report.usedHours}h</span>
                             
                             <Button 

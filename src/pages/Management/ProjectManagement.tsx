@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +14,7 @@ import { getUsers } from '@/api/user'
 import { getTasks, createTask, updateTask, deleteTask } from '@/api/task'
 import type { Project } from '@/types'
 import { getTaskProgress as calcTaskProgress, getTaskTotalTarget } from '@/lib/utils'
+import { useSettingStore } from '@/store/settingStore'
 
 export default function ProjectManagement() {
   const [loading, setLoading] = useState(true)
@@ -22,6 +23,8 @@ export default function ProjectManagement() {
   
   const { token } = useAuthStore()
   const { projects, setProjects, deleteProject: removeProject, addProject } = useProjectStore()
+  const { settings } = useSettingStore()
+  const workDaysPerMonth = parseInt(settings.workDaysPerMonth) || 22
 
   const [formData, setFormData] = useState({
     name: '',
@@ -492,7 +495,7 @@ export default function ProjectManagement() {
     const tasks = project.tasks || []
     if (tasks.length === 0) return 0
     const total = tasks.reduce((sum: number, t: any) => {
-      return sum + calcTaskProgress(t)
+      return sum + calcTaskProgress(t, workDaysPerMonth)
     }, 0)
     return Math.round(total / tasks.length)
   }
@@ -503,7 +506,7 @@ export default function ProjectManagement() {
   }
 
   const getTaskProgress = (task: any) => {
-    return calcTaskProgress(task)
+    return calcTaskProgress(task, workDaysPerMonth)
   }
 
   if (loading) {
@@ -761,7 +764,7 @@ export default function ProjectManagement() {
                         </div>
                         <div className="flex items-center gap-3 text-xs text-slate-500">
                           <span>负责人：{task.userId ? getUserName(task.userId) : '未分配'}</span>
-                          <span>进度：{task.completedQuantity}/{getTaskTotalTarget(task)}{task.unit} ({getTaskProgress(task)}%)</span>
+                          <span>进度：{task.completedQuantity}/{getTaskTotalTarget(task, workDaysPerMonth)}{task.unit} ({getTaskProgress(task)}%)</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
@@ -955,7 +958,7 @@ export default function ProjectManagement() {
                         </div>
                         <div className="flex items-center gap-3 text-xs text-slate-500">
                           <span>负责人：{task.userId ? getUserName(task.userId) : '未分配'}</span>
-                          <span>进度：{task.completedQuantity}/{getTaskTotalTarget(task)}{task.unit} ({getTaskProgress(task)}%)</span>
+                          <span>进度：{task.completedQuantity}/{getTaskTotalTarget(task, workDaysPerMonth)}{task.unit} ({getTaskProgress(task)}%)</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
