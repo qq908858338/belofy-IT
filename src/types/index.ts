@@ -81,6 +81,10 @@ export interface Report {
   usedHours: number
   status: string
   reportDate: string
+  blocker?: string
+  helpers?: string
+  attachments?: string
+  resultDesc?: string
   createdAt: string
   updatedAt: string
   user?: User

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -55,15 +55,17 @@ export default function LogSettings() {
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
           <Select value={actionFilter} onValueChange={setActionFilter}>
-            <SelectTrigger className="bg-slate-900/50 border-slate-700 text-white">
+            <SelectTrigger className="bg-slate-900/50 border-slate-700 text-white data-[placeholder]:text-slate-400">
               <SelectValue placeholder="筛选操作类型" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">全部操作</SelectItem>
-              <SelectItem value="login">登录</SelectItem>
-              <SelectItem value="create">创建</SelectItem>
-              <SelectItem value="update">更新</SelectItem>
-              <SelectItem value="delete">删除</SelectItem>
+            <SelectContent className="bg-slate-900/80 backdrop-blur-md border-slate-700 text-white">
+              <SelectItem value="" className="text-white focus:bg-slate-700 focus:text-white">全部操作</SelectItem>
+              <SelectItem value="登录" className="text-white focus:bg-slate-700 focus:text-white">登录</SelectItem>
+              <SelectItem value="创建" className="text-white focus:bg-slate-700 focus:text-white">创建</SelectItem>
+              <SelectItem value="更新" className="text-white focus:bg-slate-700 focus:text-white">更新</SelectItem>
+              <SelectItem value="删除" className="text-white focus:bg-slate-700 focus:text-white">删除</SelectItem>
+              <SelectItem value="评审" className="text-white focus:bg-slate-700 focus:text-white">评审</SelectItem>
+              <SelectItem value="提交" className="text-white focus:bg-slate-700 focus:text-white">提交</SelectItem>
             </SelectContent>
           </Select>
         </div>

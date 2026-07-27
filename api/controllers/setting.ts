@@ -1,5 +1,7 @@
 import { Request, Response } from 'express'
 import prisma from '../lib/prisma'
+import { recordLog } from '../lib/logHelper'
+import type { AuthRequest } from '../middleware/auth'
 
 export async function getSettings(req: Request, res: Response) {
   try {
@@ -13,6 +15,7 @@ export async function getSettings(req: Request, res: Response) {
 export async function updateSettings(req: Request, res: Response) {
   try {
     const settings = req.body
+    const authReq = req as AuthRequest
     
     for (const [key, value] of Object.entries(settings)) {
       await prisma.systemSetting.upsert({
@@ -21,6 +24,8 @@ export async function updateSettings(req: Request, res: Response) {
         create: { key, value: String(value) }
       })
     }
+    
+    recordLog(authReq.user?.userId, '更新', '更新了系统设置')
     
     res.json({ message: '设置已更新' })
   } catch (error) {

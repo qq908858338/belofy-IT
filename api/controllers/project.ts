@@ -1,5 +1,7 @@
 import { Request, Response } from 'express'
 import prisma from '../lib/prisma'
+import { recordLog } from '../lib/logHelper'
+import type { AuthRequest } from '../middleware/auth'
 
 export async function getProjects(req: Request, res: Response) {
   try {
@@ -63,6 +65,7 @@ export async function getProject(req: Request, res: Response) {
 export async function createProject(req: Request, res: Response) {
   try {
     const { name, description, icon, startTime, endTime, status, managerId, members } = req.body
+    const authReq = req as AuthRequest
     
     const project = await prisma.project.create({
       data: {
@@ -99,6 +102,8 @@ export async function createProject(req: Request, res: Response) {
       }
     })
     
+    recordLog(authReq.user?.userId, '创建', `创建了项目"${project.name}"`)
+    
     res.status(201).json(projectWithMembers)
   } catch (error: any) {
     console.error('createProject error:', error.message || error)
@@ -110,6 +115,7 @@ export async function updateProject(req: Request, res: Response) {
   try {
     const { id } = req.params
     const { name, description, icon, startTime, endTime, status, managerId, isArchived, members } = req.body
+    const authReq = req as AuthRequest
     
     const data: any = { 
       name, 
@@ -154,6 +160,8 @@ export async function updateProject(req: Request, res: Response) {
       }
     })
     
+    recordLog(authReq.user?.userId, '更新', `更新了项目"${projectWithMembers?.name || id}"的信息`)
+    
     res.json(projectWithMembers)
   } catch (error: any) {
     if (error.code === 'P2025') {
@@ -169,6 +177,9 @@ export async function deleteProject(req: Request, res: Response) {
   try {
     const { id } = req.params
     const projectId = parseInt(id)
+    const authReq = req as AuthRequest
+    
+    const project = await prisma.project.findUnique({ where: { id: projectId } })
     
     await prisma.taskMember.deleteMany({ where: { task: { projectId } } })
     await prisma.report.deleteMany({ where: { task: { projectId } } })
@@ -180,6 +191,8 @@ export async function deleteProject(req: Request, res: Response) {
     await prisma.project.delete({
       where: { id: projectId }
     })
+    
+    recordLog(authReq.user?.userId, '删除', `删除了项目"${project?.name || id}"`)
     
     res.json({ message: '项目已删除' })
   } catch (error: any) {
@@ -196,6 +209,7 @@ export async function reviewProject(req: Request, res: Response) {
   try {
     const { id } = req.params
     const { reviewerId, score } = req.body
+    const authReq = req as AuthRequest
     
     let level = '不合格'
     if (score >= 90) level = '优秀'
@@ -217,6 +231,9 @@ export async function reviewProject(req: Request, res: Response) {
       where: { id: parseInt(id) },
       data: { status: '已评审' }
     })
+    
+    const project = await prisma.project.findUnique({ where: { id: parseInt(id) } })
+    recordLog(authReq.user?.userId, '评审', `评审了项目"${project?.name || id}"，评分${score}分`)
     
     res.json(review)
   } catch (error) {

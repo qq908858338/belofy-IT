@@ -51,6 +51,10 @@ export type ReportMinAggregateOutputType = {
   usedHours: number | null
   status: string | null
   reportDate: Date | null
+  blocker: string | null
+  helpers: string | null
+  attachments: string | null
+  resultDesc: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -64,6 +68,10 @@ export type ReportMaxAggregateOutputType = {
   usedHours: number | null
   status: string | null
   reportDate: Date | null
+  blocker: string | null
+  helpers: string | null
+  attachments: string | null
+  resultDesc: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -77,6 +85,10 @@ export type ReportCountAggregateOutputType = {
   usedHours: number
   status: number
   reportDate: number
+  blocker: number
+  helpers: number
+  attachments: number
+  resultDesc: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -108,6 +120,10 @@ export type ReportMinAggregateInputType = {
   usedHours?: true
   status?: true
   reportDate?: true
+  blocker?: true
+  helpers?: true
+  attachments?: true
+  resultDesc?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -121,6 +137,10 @@ export type ReportMaxAggregateInputType = {
   usedHours?: true
   status?: true
   reportDate?: true
+  blocker?: true
+  helpers?: true
+  attachments?: true
+  resultDesc?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -134,6 +154,10 @@ export type ReportCountAggregateInputType = {
   usedHours?: true
   status?: true
   reportDate?: true
+  blocker?: true
+  helpers?: true
+  attachments?: true
+  resultDesc?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -234,6 +258,10 @@ export type ReportGroupByOutputType = {
   usedHours: number
   status: string
   reportDate: Date
+  blocker: string | null
+  helpers: string | null
+  attachments: string | null
+  resultDesc: string | null
   createdAt: Date
   updatedAt: Date
   _count: ReportCountAggregateOutputType | null
@@ -270,6 +298,10 @@ export type ReportWhereInput = {
   usedHours?: Prisma.FloatFilter<"Report"> | number
   status?: Prisma.StringFilter<"Report"> | string
   reportDate?: Prisma.DateTimeFilter<"Report"> | Date | string
+  blocker?: Prisma.StringNullableFilter<"Report"> | string | null
+  helpers?: Prisma.StringNullableFilter<"Report"> | string | null
+  attachments?: Prisma.StringNullableFilter<"Report"> | string | null
+  resultDesc?: Prisma.StringNullableFilter<"Report"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Report"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Report"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -287,6 +319,10 @@ export type ReportOrderByWithRelationInput = {
   usedHours?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reportDate?: Prisma.SortOrder
+  blocker?: Prisma.SortOrderInput | Prisma.SortOrder
+  helpers?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachments?: Prisma.SortOrderInput | Prisma.SortOrder
+  resultDesc?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -307,6 +343,10 @@ export type ReportWhereUniqueInput = Prisma.AtLeast<{
   usedHours?: Prisma.FloatFilter<"Report"> | number
   status?: Prisma.StringFilter<"Report"> | string
   reportDate?: Prisma.DateTimeFilter<"Report"> | Date | string
+  blocker?: Prisma.StringNullableFilter<"Report"> | string | null
+  helpers?: Prisma.StringNullableFilter<"Report"> | string | null
+  attachments?: Prisma.StringNullableFilter<"Report"> | string | null
+  resultDesc?: Prisma.StringNullableFilter<"Report"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Report"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Report"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -324,6 +364,10 @@ export type ReportOrderByWithAggregationInput = {
   usedHours?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reportDate?: Prisma.SortOrder
+  blocker?: Prisma.SortOrderInput | Prisma.SortOrder
+  helpers?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachments?: Prisma.SortOrderInput | Prisma.SortOrder
+  resultDesc?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ReportCountOrderByAggregateInput
@@ -345,6 +389,10 @@ export type ReportScalarWhereWithAggregatesInput = {
   usedHours?: Prisma.FloatWithAggregatesFilter<"Report"> | number
   status?: Prisma.StringWithAggregatesFilter<"Report"> | string
   reportDate?: Prisma.DateTimeWithAggregatesFilter<"Report"> | Date | string
+  blocker?: Prisma.StringNullableWithAggregatesFilter<"Report"> | string | null
+  helpers?: Prisma.StringNullableWithAggregatesFilter<"Report"> | string | null
+  attachments?: Prisma.StringNullableWithAggregatesFilter<"Report"> | string | null
+  resultDesc?: Prisma.StringNullableWithAggregatesFilter<"Report"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Report"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Report"> | Date | string
 }
@@ -355,6 +403,10 @@ export type ReportCreateInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutReportsInput
@@ -372,6 +424,10 @@ export type ReportUncheckedCreateInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutReportInput
@@ -384,6 +440,10 @@ export type ReportUpdateInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutReportsNestedInput
@@ -401,6 +461,10 @@ export type ReportUncheckedUpdateInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   comments?: Prisma.CommentUncheckedUpdateManyWithoutReportNestedInput
@@ -416,6 +480,10 @@ export type ReportCreateManyInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -426,6 +494,10 @@ export type ReportUpdateManyMutationInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -439,6 +511,10 @@ export type ReportUncheckedUpdateManyInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -462,6 +538,10 @@ export type ReportCountOrderByAggregateInput = {
   usedHours?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reportDate?: Prisma.SortOrder
+  blocker?: Prisma.SortOrder
+  helpers?: Prisma.SortOrder
+  attachments?: Prisma.SortOrder
+  resultDesc?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -483,6 +563,10 @@ export type ReportMaxOrderByAggregateInput = {
   usedHours?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reportDate?: Prisma.SortOrder
+  blocker?: Prisma.SortOrder
+  helpers?: Prisma.SortOrder
+  attachments?: Prisma.SortOrder
+  resultDesc?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -496,6 +580,10 @@ export type ReportMinOrderByAggregateInput = {
   usedHours?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reportDate?: Prisma.SortOrder
+  blocker?: Prisma.SortOrder
+  helpers?: Prisma.SortOrder
+  attachments?: Prisma.SortOrder
+  resultDesc?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -638,6 +726,10 @@ export type ReportCreateWithoutUserInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   task: Prisma.TaskCreateNestedOneWithoutReportsInput
@@ -653,6 +745,10 @@ export type ReportUncheckedCreateWithoutUserInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutReportInput
@@ -696,6 +792,10 @@ export type ReportScalarWhereInput = {
   usedHours?: Prisma.FloatFilter<"Report"> | number
   status?: Prisma.StringFilter<"Report"> | string
   reportDate?: Prisma.DateTimeFilter<"Report"> | Date | string
+  blocker?: Prisma.StringNullableFilter<"Report"> | string | null
+  helpers?: Prisma.StringNullableFilter<"Report"> | string | null
+  attachments?: Prisma.StringNullableFilter<"Report"> | string | null
+  resultDesc?: Prisma.StringNullableFilter<"Report"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Report"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Report"> | Date | string
 }
@@ -706,6 +806,10 @@ export type ReportCreateWithoutTaskInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutReportsInput
@@ -721,6 +825,10 @@ export type ReportUncheckedCreateWithoutTaskInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutReportInput
@@ -758,6 +866,10 @@ export type ReportCreateWithoutCommentsInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutReportsInput
@@ -774,6 +886,10 @@ export type ReportUncheckedCreateWithoutCommentsInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutReportInput
@@ -801,6 +917,10 @@ export type ReportUpdateWithoutCommentsInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutReportsNestedInput
@@ -817,6 +937,10 @@ export type ReportUncheckedUpdateWithoutCommentsInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutReportNestedInput
@@ -828,6 +952,10 @@ export type ReportCreateWithoutReviewsInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutReportsInput
@@ -844,6 +972,10 @@ export type ReportUncheckedCreateWithoutReviewsInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutReportInput
@@ -871,6 +1003,10 @@ export type ReportUpdateWithoutReviewsInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutReportsNestedInput
@@ -887,6 +1023,10 @@ export type ReportUncheckedUpdateWithoutReviewsInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   comments?: Prisma.CommentUncheckedUpdateManyWithoutReportNestedInput
@@ -900,6 +1040,10 @@ export type ReportCreateManyUserInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -910,6 +1054,10 @@ export type ReportUpdateWithoutUserInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   task?: Prisma.TaskUpdateOneRequiredWithoutReportsNestedInput
@@ -925,6 +1073,10 @@ export type ReportUncheckedUpdateWithoutUserInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   comments?: Prisma.CommentUncheckedUpdateManyWithoutReportNestedInput
@@ -939,6 +1091,10 @@ export type ReportUncheckedUpdateManyWithoutUserInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -951,6 +1107,10 @@ export type ReportCreateManyTaskInput = {
   usedHours: number
   status: string
   reportDate: Date | string
+  blocker?: string | null
+  helpers?: string | null
+  attachments?: string | null
+  resultDesc?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -961,6 +1121,10 @@ export type ReportUpdateWithoutTaskInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutReportsNestedInput
@@ -976,6 +1140,10 @@ export type ReportUncheckedUpdateWithoutTaskInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   comments?: Prisma.CommentUncheckedUpdateManyWithoutReportNestedInput
@@ -990,6 +1158,10 @@ export type ReportUncheckedUpdateManyWithoutTaskInput = {
   usedHours?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  helpers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resultDesc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1043,6 +1215,10 @@ export type ReportSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   usedHours?: boolean
   status?: boolean
   reportDate?: boolean
+  blocker?: boolean
+  helpers?: boolean
+  attachments?: boolean
+  resultDesc?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1061,6 +1237,10 @@ export type ReportSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   usedHours?: boolean
   status?: boolean
   reportDate?: boolean
+  blocker?: boolean
+  helpers?: boolean
+  attachments?: boolean
+  resultDesc?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1076,6 +1256,10 @@ export type ReportSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   usedHours?: boolean
   status?: boolean
   reportDate?: boolean
+  blocker?: boolean
+  helpers?: boolean
+  attachments?: boolean
+  resultDesc?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1091,11 +1275,15 @@ export type ReportSelectScalar = {
   usedHours?: boolean
   status?: boolean
   reportDate?: boolean
+  blocker?: boolean
+  helpers?: boolean
+  attachments?: boolean
+  resultDesc?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ReportOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "userId" | "taskId" | "completedQuantity" | "usedHours" | "status" | "reportDate" | "createdAt" | "updatedAt", ExtArgs["result"]["report"]>
+export type ReportOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "userId" | "taskId" | "completedQuantity" | "usedHours" | "status" | "reportDate" | "blocker" | "helpers" | "attachments" | "resultDesc" | "createdAt" | "updatedAt", ExtArgs["result"]["report"]>
 export type ReportInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   task?: boolean | Prisma.TaskDefaultArgs<ExtArgs>
@@ -1129,6 +1317,10 @@ export type $ReportPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     usedHours: number
     status: string
     reportDate: Date
+    blocker: string | null
+    helpers: string | null
+    attachments: string | null
+    resultDesc: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["report"]>
@@ -1566,6 +1758,10 @@ export interface ReportFieldRefs {
   readonly usedHours: Prisma.FieldRef<"Report", 'Float'>
   readonly status: Prisma.FieldRef<"Report", 'String'>
   readonly reportDate: Prisma.FieldRef<"Report", 'DateTime'>
+  readonly blocker: Prisma.FieldRef<"Report", 'String'>
+  readonly helpers: Prisma.FieldRef<"Report", 'String'>
+  readonly attachments: Prisma.FieldRef<"Report", 'String'>
+  readonly resultDesc: Prisma.FieldRef<"Report", 'String'>
   readonly createdAt: Prisma.FieldRef<"Report", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Report", 'DateTime'>
 }

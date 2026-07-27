@@ -1,8 +1,8 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Save, Calculator, Scale, Calendar } from 'lucide-react'
+import { Save, Calculator, Scale, Calendar, Award } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useSettingStore } from '@/store/settingStore'
 import { getSettings, updateSettings } from '@/api/setting'
@@ -14,6 +14,7 @@ export default function DataSettings() {
   const [taskOnTimeWeight, setTaskOnTimeWeight] = useState('30')
   const [taskReviewWeight, setTaskReviewWeight] = useState('40')
   const [loadBaseHours, setLoadBaseHours] = useState('40')
+  const [performanceTotalScore, setPerformanceTotalScore] = useState('100')
   
   const { token } = useAuthStore()
   const { settings, setSettings } = useSettingStore()
@@ -32,6 +33,7 @@ export default function DataSettings() {
       setTaskOnTimeWeight(data.taskOnTimeWeight || '30')
       setTaskReviewWeight(data.taskReviewWeight || '40')
       setLoadBaseHours(data.loadBaseHours || '40')
+      setPerformanceTotalScore(data.performanceTotalScore || '100')
     } catch (error) {
       console.error('Failed to fetch settings:', error)
     } finally {
@@ -47,6 +49,7 @@ export default function DataSettings() {
         taskOnTimeWeight: taskOnTimeWeight,
         taskReviewWeight: taskReviewWeight,
         loadBaseHours: loadBaseHours,
+        performanceTotalScore: performanceTotalScore,
       })
       setSettings({
         workDaysPerMonth: workDays,
@@ -54,6 +57,7 @@ export default function DataSettings() {
         taskOnTimeWeight: taskOnTimeWeight,
         taskReviewWeight: taskReviewWeight,
         loadBaseHours: loadBaseHours,
+        performanceTotalScore: performanceTotalScore,
       })
       alert('设置已保存')
     } catch (error) {
@@ -112,6 +116,22 @@ export default function DataSettings() {
               <div>
                 <h2 className="font-semibold text-white">绩效评分权重</h2>
                 <p className="text-sm text-slate-500">总分 = 日报得分 + 任务准时率得分 + 任务评审得分</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-400 flex items-center gap-2">
+                  <Award className="w-4 h-4" />
+                  绩效总分（分）
+                </label>
+                <Input
+                  type="number"
+                  value={performanceTotalScore}
+                  onChange={(e) => setPerformanceTotalScore(e.target.value)}
+                  className="bg-slate-900/50 border-slate-700 text-white"
+                />
+                <p className="text-xs text-slate-500">默认100分</p>
               </div>
             </div>
             

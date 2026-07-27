@@ -1,5 +1,7 @@
 import { Request, Response } from 'express'
 import prisma from '../lib/prisma'
+import { recordLog } from '../lib/logHelper'
+import type { AuthRequest } from '../middleware/auth'
 
 export async function getTasks(req: Request, res: Response) {
   try {
@@ -63,6 +65,7 @@ export async function getTasks(req: Request, res: Response) {
 export async function createTask(req: Request, res: Response) {
   try {
     const { name, type, status, priority, targetQuantity, unit, completedQuantity, hoursPerUnit, startTime, endTime, description, projectId, userId, members, frequency, dailyDescription } = req.body
+    const authReq = req as AuthRequest
     
     const task = await prisma.task.create({
       data: {
@@ -139,6 +142,44 @@ export async function createTask(req: Request, res: Response) {
         } : null
       })) || []
     })
+    
+    recordLog(authReq.user?.userId, '创建', `创建了任务"${task.name}"`)
+    
+    res.status(201).json({
+      ...taskWithMembers,
+      user: taskWithMembers?.user ? {
+        id: taskWithMembers.user.id,
+        username: taskWithMembers.user.username,
+        nickname: taskWithMembers.user.nickname,
+        departmentId: taskWithMembers.user.departmentId,
+        department: taskWithMembers.user.department?.name || '',
+        createdAt: taskWithMembers.user.createdAt,
+        updatedAt: taskWithMembers.user.updatedAt
+      } : null,
+      project: taskWithMembers?.project ? {
+        id: taskWithMembers.project.id,
+        name: taskWithMembers.project.name,
+        description: taskWithMembers.project.description,
+        icon: taskWithMembers.project.icon,
+        status: taskWithMembers.project.status,
+        managerId: taskWithMembers.project.managerId,
+        isArchived: taskWithMembers.project.isArchived,
+        createdAt: taskWithMembers.project.createdAt,
+        updatedAt: taskWithMembers.project.updatedAt
+      } : null,
+      members: taskWithMembers?.members.map(member => ({
+        ...member,
+        user: member.user ? {
+          id: member.user.id,
+          username: member.user.username,
+          nickname: member.user.nickname,
+          departmentId: member.user.departmentId,
+          department: member.user.department?.name || '',
+          createdAt: member.user.createdAt,
+          updatedAt: member.user.updatedAt
+        } : null
+      })) || []
+    })
   } catch (error: any) {
     console.error('createTask error:', error.message || error)
     res.status(500).json({ message: '服务器内部错误', detail: error.message })
@@ -149,6 +190,7 @@ export async function updateTask(req: Request, res: Response) {
   try {
     const { id } = req.params
     const { name, type, status, priority, targetQuantity, unit, completedQuantity, hoursPerUnit, startTime, endTime, description, projectId, isArchived, members, userId, frequency, dailyDescription } = req.body
+    const authReq = req as AuthRequest
     
     const data: any = {
       name,
@@ -191,6 +233,8 @@ export async function updateTask(req: Request, res: Response) {
         members: { include: { user: { include: { department: true } } } }
       }
     })
+    
+    recordLog(authReq.user?.userId, '更新', `更新了任务"${updatedTask?.name || id}"的信息`)
     
     res.json({
       ...updatedTask,
@@ -241,6 +285,9 @@ export async function deleteTask(req: Request, res: Response) {
   try {
     const { id } = req.params
     const taskId = parseInt(id)
+    const authReq = req as AuthRequest
+    
+    const task = await prisma.task.findUnique({ where: { id: taskId } })
     
     await prisma.taskMember.deleteMany({ where: { taskId } })
     await prisma.report.deleteMany({ where: { taskId } })
@@ -250,6 +297,8 @@ export async function deleteTask(req: Request, res: Response) {
     await prisma.task.delete({
       where: { id: taskId }
     })
+    
+    recordLog(authReq.user?.userId, '删除', `删除了任务"${task?.name || id}"`)
     
     res.json({ message: '任务已删除' })
   } catch (error: any) {

@@ -8,6 +8,7 @@ import { CalendarDays, Send, Plus, ChevronDown, ChevronUp, Folder, Image, Video,
 import { useAuthStore } from '@/store/authStore'
 import { useTaskStore } from '@/store/taskStore'
 import { getTasks, createTask, updateTask } from '@/api/task'
+import { createReport } from '@/api/report'
 import { getUsers } from '@/api/user'
 import type { Task } from '@/types'
 import { getTaskProgress as calcTaskProgress, getTaskTotalTarget } from '@/lib/utils'
@@ -200,12 +201,45 @@ export default function TodayReport() {
     setShowSubmitDialog(true)
   }
 
-  const confirmSubmitReport = () => {
-    setShowSubmitDialog(false)
-    setUpdatedTaskIds([])
-    setSubmittedData({})
-    setShowSuccessDialog(true)
-    setTimeout(() => setShowSuccessDialog(false), 2000)
+  const confirmSubmitReport = async () => {
+    try {
+      const today = new Date()
+      const todayStr = today.toISOString().split('T')[0]
+      
+      console.log('Submitting reports for tasks:', updatedTaskIds)
+      console.log('Submitted data:', submittedData)
+      
+      for (const taskId of updatedTaskIds) {
+        const data = submittedData[taskId]
+        if (data) {
+          const reportData = {
+            type: 'daily',
+            userId: user!.id,
+            taskId: taskId,
+            completedQuantity: data.todayCompleted || 0,
+            usedHours: data.todayHours || 0,
+            status: '待评审',
+            reportDate: todayStr,
+            blocker: data.blocker || undefined,
+            helpers: data.helpers && Array.isArray(data.helpers) && data.helpers.length > 0 ? JSON.stringify(data.helpers) : undefined,
+            attachments: data.attachments && Array.isArray(data.attachments) && data.attachments.length > 0 ? JSON.stringify(data.attachments) : undefined,
+            resultDesc: data.resultDesc || undefined
+          }
+          console.log('Submitting report for task', taskId, ':', reportData)
+          await createReport(token!, reportData)
+        }
+      }
+      
+      setShowSubmitDialog(false)
+      setUpdatedTaskIds([])
+      setSubmittedData({})
+      setShowSuccessDialog(true)
+      setTimeout(() => setShowSuccessDialog(false), 2000)
+    } catch (error: any) {
+      console.error('Failed to submit report:', error)
+      const errorMsg = error?.response?.data?.error || error?.response?.data?.message || error?.message || '未知错误'
+      alert(`提交日报失败：${errorMsg}`)
+    }
   }
 
   const openProgressDialog = (task: Task) => {
@@ -1344,7 +1378,44 @@ export default function TodayReport() {
               
               {attachments.length > 0 && (
                 <div className="mt-3 space-y-2">
-                  {attachments.map((att) => (
+                  {(attachments.filter(a => a.type === 'image' || a.type === 'screenshot' || a.type === 'video').length > 0) && (
+                    <div className="flex flex-wrap gap-2">
+                      {attachments.filter(a => a.type === 'image' || a.type === 'screenshot' || a.type === 'video').map((att) => (
+                        <div 
+                          key={att.id}
+                          className="relative group"
+                        >
+                          {att.type === 'video' ? (
+                            <div 
+                              className="w-16 h-16 bg-slate-800 rounded-lg border border-slate-700 flex items-center justify-center cursor-pointer"
+                              onClick={() => att.url && setPreviewContent({ url: att.url, name: att.name, type: att.type })}
+                              title={att.name}
+                            >
+                              <Video className="w-6 h-6 text-purple-400" />
+                            </div>
+                          ) : (
+                            <img 
+                              src={att.url} 
+                              alt={att.name}
+                              className="w-16 h-16 rounded-lg object-cover cursor-pointer border border-slate-700"
+                              onClick={() => att.url && setPreviewContent({ url: att.url, name: att.name, type: att.type })}
+                              title={att.name}
+                            />
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-5 w-5 bg-slate-900/90 text-slate-400 hover:text-red-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeAttachment(att.id)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {attachments.filter(a => a.type === 'document' || a.type === 'link').map((att) => (
                     <div 
                       key={att.id}
                       className="flex items-center justify-between p-2 bg-slate-800/50 rounded-lg border border-slate-700"
@@ -1353,28 +1424,14 @@ export default function TodayReport() {
                         <span className={`p-1.5 rounded ${getTypeColor(att.type)}`}>
                           {getTypeIcon(att.type)}
                         </span>
-                        {att.type === 'image' || att.type === 'screenshot' ? (
-                          <img 
-                            src={att.url} 
-                            alt={att.name}
-                            className="w-8 h-8 rounded object-cover cursor-pointer"
-                            onClick={() => att.url && setPreviewContent({ url: att.url, name: att.name, type: att.type })}
-                          />
-                        ) : att.type === 'video' ? (
-                          <Video className="w-5 h-5 text-purple-400 cursor-pointer flex-shrink-0" onClick={() => att.url && setPreviewContent({ url: att.url, name: att.name, type: att.type })} />
-                        ) : att.type === 'document' ? (
-                          <FileText className="w-5 h-5 text-orange-400 cursor-pointer flex-shrink-0" onClick={() => { if (att.url) handleDocumentDownload(att.url, att.name) }} />
-                        ) : null}
                         <span 
-                          className={`text-xs text-slate-300 truncate cursor-pointer hover:text-white ${(att.type === 'video' || att.type === 'image' || att.type === 'screenshot' || att.type === 'document') ? 'text-blue-400 hover:text-blue-300 underline' : ''}`}
+                          className={`text-xs text-slate-300 truncate cursor-pointer hover:text-white ${att.type === 'document' ? 'text-blue-400 hover:text-blue-300 underline' : ''}`}
                           onClick={() => {
                             if (att.url) {
                               if (att.type === 'link') {
                                 window.open(att.url, '_blank')
                               } else if (att.type === 'document') {
                                 handleDocumentDownload(att.url, att.name)
-                              } else {
-                                setPreviewContent({ url: att.url, name: att.name, type: att.type })
                               }
                             }
                           }}
@@ -1628,34 +1685,56 @@ export default function TodayReport() {
                   {hasAttachments && (
                     <div className="flex items-start gap-2 py-2 border-t border-slate-700/30">
                       <span className="text-slate-500 text-sm whitespace-nowrap">成果栏</span>
-                      <div className="flex gap-2">
-                        {imageCount > 0 && (
-                          <div className="relative">
-                            <div className="w-12 h-10 bg-slate-700/50 border border-slate-600 rounded flex items-center justify-center">
-                              <Image className="w-4 h-4 text-slate-400" />
-                            </div>
-                            <span className="absolute -top-1 -right-1 bg-indigo-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{imageCount}</span>
-                            <span className="text-xs text-slate-500 block text-center mt-1">图片</span>
+                      <div className="flex-1 space-y-2">
+                        {(data.attachments.filter(a => a.type === 'image' || a.type === 'screenshot' || a.type === 'video').length > 0) && (
+                          <div className="flex flex-wrap gap-2">
+                            {data.attachments.filter(a => a.type === 'image' || a.type === 'screenshot' || a.type === 'video').map((att) => (
+                              <div 
+                                key={att.id}
+                                className="cursor-pointer"
+                                onClick={() => att.url && (att.type === 'document' ? handleDocumentDownload(att.url, att.name) : setPreviewContent({ url: att.url, name: att.name, type: att.type }))}
+                                title={att.name}
+                              >
+                                {att.type === 'video' ? (
+                                  <div className="w-12 h-12 bg-slate-800 rounded-lg border border-slate-700 flex items-center justify-center">
+                                    <Video className="w-5 h-5 text-purple-400" />
+                                  </div>
+                                ) : (
+                                  <img 
+                                    src={att.url} 
+                                    alt={att.name}
+                                    className="w-12 h-12 rounded-lg object-cover border border-slate-700"
+                                  />
+                                )}
+                              </div>
+                            ))}
                           </div>
                         )}
-                        {videoCount > 0 && (
-                          <div className="relative">
-                            <div className="w-12 h-10 bg-slate-700/50 border border-slate-600 rounded flex items-center justify-center">
-                              <Video className="w-4 h-4 text-slate-400" />
-                            </div>
-                            <span className="absolute -top-1 -right-1 bg-indigo-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{videoCount}</span>
-                            <span className="text-xs text-slate-500 block text-center mt-1">视频</span>
+                        
+                        {data.attachments.filter(a => a.type === 'document' || a.type === 'link').map((att) => (
+                          <div key={att.id} className="flex items-center gap-2">
+                            {att.type === 'document' ? (
+                              <FileText className="w-5 h-5 text-orange-400 cursor-pointer flex-shrink-0" onClick={() => { if (att.url) handleDocumentDownload(att.url, att.name) }} />
+                            ) : (
+                              <Link className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                            )}
+                            <span 
+                              className={`text-xs truncate cursor-pointer hover:text-white ${att.type === 'document' ? 'text-blue-400 hover:text-blue-300 underline' : 'text-slate-300'}`}
+                              onClick={() => {
+                                if (att.url) {
+                                  if (att.type === 'link') {
+                                    window.open(att.url, '_blank')
+                                  } else if (att.type === 'document') {
+                                    handleDocumentDownload(att.url, att.name)
+                                  }
+                                }
+                              }}
+                              title={att.name}
+                            >
+                              {att.type === 'link' ? att.name.replace(/^https?:\/\//, '') : att.name}
+                            </span>
                           </div>
-                        )}
-                        {docCount > 0 && (
-                          <div className="relative">
-                            <div className="w-12 h-10 bg-slate-700/50 border border-slate-600 rounded flex items-center justify-center">
-                              <FileText className="w-4 h-4 text-slate-400" />
-                            </div>
-                            <span className="absolute -top-1 -right-1 bg-indigo-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{docCount}</span>
-                            <span className="text-xs text-slate-500 block text-center mt-1">文档</span>
-                          </div>
-                        )}
+                        ))}
                       </div>
                     </div>
                   )}

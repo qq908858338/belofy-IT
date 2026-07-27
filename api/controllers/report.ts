@@ -1,12 +1,20 @@
 import { Request, Response } from 'express'
 import prisma from '../lib/prisma'
+import { recordLog } from '../lib/logHelper'
+import type { AuthRequest } from '../middleware/auth'
 
 export async function getReports(req: Request, res: Response) {
   try {
     const reports = await prisma.report.findMany({
       include: {
         user: true,
-        task: true,
+        task: {
+          include: {
+            user: true,
+            project: true,
+            members: { include: { user: true } }
+          }
+        },
         comments: { include: { user: true } },
         reviews: true
       }
@@ -29,7 +37,13 @@ export async function getDailyReports(req: Request, res: Response) {
       },
       include: {
         user: true,
-        task: true,
+        task: {
+          include: {
+            user: true,
+            project: true,
+            members: { include: { user: true } }
+          }
+        },
         comments: { include: { user: true } },
         reviews: true
       }
@@ -142,7 +156,10 @@ export async function getMonthlyReports(req: Request, res: Response) {
 
 export async function createReport(req: Request, res: Response) {
   try {
-    const { type, userId, taskId, completedQuantity, usedHours, status, reportDate } = req.body
+    const { type, userId, taskId, completedQuantity, usedHours, status, reportDate, blocker, helpers, attachments, resultDesc } = req.body
+    const authReq = req as AuthRequest
+    
+    const task = await prisma.task.findUnique({ where: { id: taskId } })
     
     const report = await prisma.report.create({
       data: {
@@ -152,7 +169,11 @@ export async function createReport(req: Request, res: Response) {
         completedQuantity,
         usedHours,
         status,
-        reportDate: new Date(reportDate)
+        reportDate: new Date(reportDate),
+        blocker: blocker || null,
+        helpers: helpers || null,
+        attachments: attachments || null,
+        resultDesc: resultDesc || null
       }
     })
     
@@ -163,9 +184,12 @@ export async function createReport(req: Request, res: Response) {
       }
     })
     
+    recordLog(authReq.user?.userId, '提交', `提交了任务"${task?.name || taskId}"的汇报`)
+    
     res.status(201).json(report)
   } catch (error) {
-    res.status(500).json({ message: '服务器内部错误' })
+    console.error('Create report error:', error)
+    res.status(500).json({ message: '服务器内部错误', error: (error as any)?.message })
   }
 }
 
@@ -173,6 +197,7 @@ export async function updateReport(req: Request, res: Response) {
   try {
     const { id } = req.params
     const { completedQuantity, usedHours, status } = req.body
+    const authReq = req as AuthRequest
     
     const report = await prisma.report.findUnique({ where: { id: parseInt(id) } })
     
@@ -180,29 +205,41 @@ export async function updateReport(req: Request, res: Response) {
       return res.status(404).json({ message: '汇报不存在' })
     }
     
-    const diff = completedQuantity - report.completedQuantity
+    const updateData: any = {}
+    if (status !== undefined) updateData.status = status
+    if (completedQuantity !== undefined) updateData.completedQuantity = completedQuantity
+    if (usedHours !== undefined) updateData.usedHours = usedHours
+    
+    if (completedQuantity !== undefined) {
+      const diff = completedQuantity - report.completedQuantity
+      if (diff !== 0) {
+        await prisma.task.update({
+          where: { id: report.taskId },
+          data: {
+            completedQuantity: { increment: diff }
+          }
+        })
+      }
+    }
     
     const updatedReport = await prisma.report.update({
       where: { id: parseInt(id) },
-      data: { completedQuantity, usedHours, status }
+      data: updateData
     })
     
-    await prisma.task.update({
-      where: { id: report.taskId },
-      data: {
-        completedQuantity: { increment: diff }
-      }
-    })
+    recordLog(authReq.user?.userId, '更新', `更新了ID为"${id}"的汇报信息`)
     
     res.json(updatedReport)
   } catch (error) {
-    res.status(500).json({ message: '服务器内部错误' })
+    console.error('Update report error:', error)
+    res.status(500).json({ message: '服务器内部错误', error: (error as any)?.message })
   }
 }
 
 export async function deleteReport(req: Request, res: Response) {
   try {
     const { id } = req.params
+    const authReq = req as AuthRequest
     
     const report = await prisma.report.findUnique({ where: { id: parseInt(id) } })
     
@@ -221,6 +258,8 @@ export async function deleteReport(req: Request, res: Response) {
       where: { id: parseInt(id) }
     })
     
+    recordLog(authReq.user?.userId, '删除', `删除了ID为"${id}"的汇报`)
+    
     res.json({ message: '汇报已删除' })
   } catch (error) {
     res.status(500).json({ message: '服务器内部错误' })
@@ -231,6 +270,7 @@ export async function addComment(req: Request, res: Response) {
   try {
     const { id } = req.params
     const { userId, content } = req.body
+    const authReq = req as AuthRequest
     
     const comment = await prisma.comment.create({
       data: {
@@ -240,6 +280,8 @@ export async function addComment(req: Request, res: Response) {
       },
       include: { user: true }
     })
+    
+    recordLog(authReq.user?.userId, '评论', `在汇报ID"${id}"中添加了评论`)
     
     res.status(201).json(comment)
   } catch (error) {
@@ -251,6 +293,7 @@ export async function addReview(req: Request, res: Response) {
   try {
     const { id } = req.params
     const { reviewerId, score } = req.body
+    const authReq = req as AuthRequest
     
     let level = '不合格'
     if (score >= 90) level = '优秀'
@@ -267,6 +310,8 @@ export async function addReview(req: Request, res: Response) {
         level
       }
     })
+    
+    recordLog(authReq.user?.userId, '评审', `评审了汇报ID"${id}"，评分${score}分`)
     
     res.json(review)
   } catch (error) {

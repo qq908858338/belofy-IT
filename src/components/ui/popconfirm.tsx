@@ -28,12 +28,16 @@ export function Popconfirm({
 }: PopconfirmProps) {
   const [open, setOpen] = useState(false)
 
-  const handleConfirm = () => {
+  const handleConfirm = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
     onConfirm()
     setOpen(false)
   }
 
-  const handleCancel = () => {
+  const handleCancel = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
     onCancel?.()
     setOpen(false)
   }
@@ -41,7 +45,11 @@ export function Popconfirm({
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-xs bg-gray-900 border-gray-700">
+        <DialogContent 
+          className="sm:max-w-xs bg-gray-900 border-gray-700" 
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
           <DialogHeader>
             <DialogTitle className="text-white">{title}</DialogTitle>
           </DialogHeader>
@@ -65,7 +73,10 @@ export function Popconfirm({
         </DialogContent>
       </Dialog>
       <span
-        onClick={() => setOpen(true)}
+        onClick={(e) => {
+          e.stopPropagation()
+          setOpen(true)
+        }}
         className="cursor-pointer"
       >
         {children}

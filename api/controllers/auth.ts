@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import prisma from '../lib/prisma'
 import bcrypt from 'bcrypt'
 import { signToken } from '../utils/jwt'
+import { recordLog } from '../lib/logHelper'
 
 export async function login(req: Request, res: Response) {
   try {
@@ -41,6 +42,8 @@ export async function login(req: Request, res: Response) {
     })
     
     console.log('Login successful for user:', user.username)
+    
+    recordLog(user.id, '登录', `${user.nickname} 登录了系统`)
     
     res.json({
       token,

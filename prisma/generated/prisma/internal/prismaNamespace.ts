@@ -1434,6 +1434,10 @@ export const ReportScalarFieldEnum = {
   usedHours: 'usedHours',
   status: 'status',
   reportDate: 'reportDate',
+  blocker: 'blocker',
+  helpers: 'helpers',
+  attachments: 'attachments',
+  resultDesc: 'resultDesc',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

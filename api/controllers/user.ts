@@ -1,6 +1,8 @@
 import { Request, Response } from 'express'
 import prisma from '../lib/prisma'
 import bcrypt from 'bcrypt'
+import { recordLog } from '../lib/logHelper'
+import type { AuthRequest } from '../middleware/auth'
 
 export async function getUsers(req: Request, res: Response) {
   try {
@@ -25,6 +27,7 @@ export async function getUsers(req: Request, res: Response) {
 export async function createUser(req: Request, res: Response) {
   try {
     const { username, nickname, departmentId, password } = req.body
+    const authReq = req as AuthRequest
     
     const hashedPassword = await bcrypt.hash(password, 10)
     
@@ -37,6 +40,8 @@ export async function createUser(req: Request, res: Response) {
       },
       include: { department: true }
     })
+    
+    recordLog(authReq.user?.userId, '创建', `创建了用户"${user.nickname}"`)
     
     res.status(201).json({
       id: user.id,
@@ -58,6 +63,7 @@ export async function updateUser(req: Request, res: Response) {
   try {
     const { id } = req.params
     const { nickname, departmentId, password } = req.body
+    const authReq = req as AuthRequest
     
     const data: any = { nickname, departmentId }
     
@@ -70,6 +76,8 @@ export async function updateUser(req: Request, res: Response) {
       data,
       include: { department: true }
     })
+    
+    recordLog(authReq.user?.userId, '更新', `更新了用户"${user.nickname}"的信息`)
     
     res.json({
       id: user.id,
@@ -90,10 +98,15 @@ export async function updateUser(req: Request, res: Response) {
 export async function deleteUser(req: Request, res: Response) {
   try {
     const { id } = req.params
+    const authReq = req as AuthRequest
+    
+    const user = await prisma.user.findUnique({ where: { id: parseInt(id) } })
     
     await prisma.user.delete({
       where: { id: parseInt(id) }
     })
+    
+    recordLog(authReq.user?.userId, '删除', `删除了用户"${user?.nickname || id}"`)
     
     res.json({ message: '用户已删除' })
   } catch (error: any) {

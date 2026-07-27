@@ -1,15 +1,16 @@
-﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Award, Clock } from 'lucide-react'
+import { Award, Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useReportStore } from '@/store/reportStore'
 import { getDailyReports } from '@/api/report'
 
 export default function ViewReview() {
   const [loading, setLoading] = useState(true)
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
   
-  const { token } = useAuthStore()
+  const { token, user } = useAuthStore()
   const { dailyReports, setDailyReports } = useReportStore()
 
   useEffect(() => {
@@ -28,7 +29,37 @@ export default function ViewReview() {
     }
   }
 
-  const reportsWithReviews = dailyReports.filter(r => r.reviews && r.reviews.length > 0)
+  const isMyTask = (report: any) => {
+    if (!user) return false
+    const task = report.task
+    if (!task) return false
+    if (task.userId === user.id) return true
+    if (task.members?.some((m: any) => m.userId === user.id)) return true
+    return false
+  }
+
+  const myReports = dailyReports.filter(r => 
+    (r.reviews && r.reviews.length > 0) && isMyTask(r)
+  )
+
+  const groupedReports = myReports.reduce((acc: Record<string, any[]>, report) => {
+    const taskType = report.task?.type || '其他任务'
+    const date = new Date(report.reportDate).toLocaleDateString('zh-CN')
+    const key = `${date}-${taskType}`
+    if (!acc[key]) acc[key] = []
+    acc[key].push(report)
+    return acc
+  }, {})
+
+  const sortedGroups = Object.entries(groupedReports).sort((a, b) => {
+    const dateA = new Date(a[0].split('-')[0])
+    const dateB = new Date(b[0].split('-')[0])
+    return dateB.getTime() - dateA.getTime()
+  })
+
+  const toggleGroup = (key: string) => {
+    setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }))
+  }
 
   const getReviewLevelColor = (level: string) => {
     const styles: Record<string, string> = {
@@ -45,13 +76,13 @@ export default function ViewReview() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">查看评审</h1>
-        </div>
+      </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
         </div>
-      ) : reportsWithReviews.length === 0 ? (
+      ) : sortedGroups.length === 0 ? (
         <Card className="bg-slate-900/50 border-slate-800">
           <CardContent className="p-12 text-center">
             <Award className="w-12 h-12 text-slate-600 mx-auto mb-4" />
@@ -59,47 +90,63 @@ export default function ViewReview() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {reportsWithReviews.map((report) => (
-            <Card key={report.id} className="bg-slate-900/50 border-slate-800">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                    <span className="font-medium text-white">{report.user?.nickname[0]}</span>
+        <div className="space-y-4">
+          {sortedGroups.map(([key, reports]) => {
+            const [date, taskType] = key.split('-')
+            const isExpanded = expandedGroups[key] !== false
+            
+            return (
+              <div key={key} className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+                <div 
+                  className="flex items-center justify-between px-4 py-3 bg-slate-800/30 cursor-pointer hover:bg-slate-800/50 transition-colors"
+                  onClick={() => toggleGroup(key)}
+                >
+                  <div className="flex items-center gap-3">
+                    <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">{taskType}</Badge>
+                    <span className="text-slate-400 text-sm">{date}</span>
+                    <span className="text-slate-500 text-xs">共 {reports.length} 条</span>
                   </div>
-                  <div>
-                    <h2 className="font-semibold text-white">{report.user?.nickname}</h2>
-                    <p className="text-sm text-slate-500">{report.task?.name}</p>
-                  </div>
+                  {isExpanded ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
                 </div>
                 
-                <div className="space-y-4">
-                  {(report.reviews || []).map((review) => (
-                    <div key={review.id} className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                            <span className="text-xs font-medium text-white">{review.reviewer?.nickname[0]}</span>
+                {isExpanded && (
+                  <div className="divide-y divide-slate-800/50">
+                    {reports.map((report) => (
+                      <div key={report.id} className="px-4 py-4 hover:bg-slate-800/20 transition-colors">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-white truncate">{report.task?.name || '无关联任务'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                              <Clock className="w-3 h-3" />
+                              {new Date(report.updatedAt).toLocaleString()}
+                            </div>
                           </div>
-                          <span className="text-sm font-medium text-white">{review.reviewer?.nickname}</span>
+                          <span className="text-xs text-green-400 ml-3">+{report.completedQuantity}</span>
                         </div>
-                        <span className="text-xs text-slate-500 flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {new Date(review.createdAt).toLocaleDateString()}
-                        </span>
+                        
+                        {report.reviews && report.reviews.length > 0 && (
+                          <div className="space-y-2">
+                            {report.reviews.map((review) => (
+                              <div key={review.id} className="p-3 rounded-lg bg-slate-800/40 border border-slate-700/30">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-2xl font-bold text-white">{review.score}分</span>
+                                  <Badge variant="outline" className={getReviewLevelColor(review.level)}>
+                                    {review.level}
+                                  </Badge>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl font-bold text-white">{review.score}</span>
-                        <Badge variant="outline" className={getReviewLevelColor(review.level)}>
-                          {review.level}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

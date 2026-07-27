@@ -16,6 +16,7 @@ export const useSettingStore = create<SettingStore>()((set) => ({
     taskOnTimeWeight: '30',
     taskReviewWeight: '40',
     loadBaseHours: '40',
+    performanceTotalScore: '100',
   },
   logs: [],
   setSettings: (settings) => set({ settings }),

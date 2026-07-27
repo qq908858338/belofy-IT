@@ -73,6 +73,7 @@ export default function PeopleManagement() {
     )
     
     const baseHours = parseInt(settings.loadBaseHours || '40') || 40
+    const totalScore = parseInt(settings.performanceTotalScore || '100') || 100
     const load = allUserTasks.length > 0 && baseHours > 0 ? Math.round((totalRemainingHours / baseHours) * 100) : 0
     
     const reportCount = userReports.length
@@ -91,15 +92,16 @@ export default function PeopleManagement() {
       load,
       reportCount,
       avgScore: avgScore || '--',
-      performanceScore: Math.min(Math.max(performanceScore, 0), 100),
+      performanceScore: Math.min(Math.max(performanceScore, 0), totalScore),
     }
   }
 
-  const getPerformanceLevel = (score: number) => {
-    if (score >= 90) return { label: '优秀', color: 'text-green-400 bg-green-500/10' }
-    if (score >= 80) return { label: '良好', color: 'text-blue-400 bg-blue-500/10' }
-    if (score >= 70) return { label: '一般', color: 'text-yellow-400 bg-yellow-500/10' }
-    if (score >= 60) return { label: '合格', color: 'text-orange-400 bg-orange-500/10' }
+  const getPerformanceLevel = (score: number, totalScore: number) => {
+    const ratio = score / totalScore
+    if (ratio >= 0.9) return { label: '优秀', color: 'text-green-400 bg-green-500/10' }
+    if (ratio >= 0.8) return { label: '良好', color: 'text-blue-400 bg-blue-500/10' }
+    if (ratio >= 0.7) return { label: '一般', color: 'text-yellow-400 bg-yellow-500/10' }
+    if (ratio >= 0.6) return { label: '合格', color: 'text-orange-400 bg-orange-500/10' }
     return { label: '不合格', color: 'text-red-400 bg-red-500/10' }
   }
 
@@ -123,7 +125,8 @@ export default function PeopleManagement() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {users.filter(user => !['roman', 'zhijun'].includes(user.username)).map((user) => {
             const stats = getUserStats(user.id)
-            const performance = getPerformanceLevel(stats.performanceScore)
+            const totalScore = parseInt(settings.performanceTotalScore || '100') || 100
+            const performance = getPerformanceLevel(stats.performanceScore, totalScore)
             
             return (
               <Card key={user.id} className="bg-slate-900/50 border-slate-800">

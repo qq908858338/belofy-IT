@@ -1,5 +1,7 @@
 import { Request, Response } from 'express'
 import prisma from '../lib/prisma'
+import { recordLog } from '../lib/logHelper'
+import type { AuthRequest } from '../middleware/auth'
 
 export async function getDepartments(req: Request, res: Response) {
   try {
@@ -13,10 +15,13 @@ export async function getDepartments(req: Request, res: Response) {
 export async function createDepartment(req: Request, res: Response) {
   try {
     const { name } = req.body
+    const authReq = req as AuthRequest
     
     const department = await prisma.department.create({
       data: { name }
     })
+    
+    recordLog(authReq.user?.userId, '创建', `创建了部门"${department.name}"`)
     
     res.status(201).json(department)
   } catch (error: any) {
@@ -32,11 +37,14 @@ export async function updateDepartment(req: Request, res: Response) {
   try {
     const { id } = req.params
     const { name } = req.body
+    const authReq = req as AuthRequest
     
     const department = await prisma.department.update({
       where: { id: parseInt(id) },
       data: { name }
     })
+    
+    recordLog(authReq.user?.userId, '更新', `更新了部门"${department.name}"的信息`)
     
     res.json(department)
   } catch (error: any) {
@@ -51,10 +59,15 @@ export async function updateDepartment(req: Request, res: Response) {
 export async function deleteDepartment(req: Request, res: Response) {
   try {
     const { id } = req.params
+    const authReq = req as AuthRequest
+    
+    const department = await prisma.department.findUnique({ where: { id: parseInt(id) } })
     
     await prisma.department.delete({
       where: { id: parseInt(id) }
     })
+    
+    recordLog(authReq.user?.userId, '删除', `删除了部门"${department?.name || id}"`)
     
     res.json({ message: '部门已删除' })
   } catch (error: any) {
