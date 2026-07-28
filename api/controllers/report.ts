@@ -254,6 +254,9 @@ export async function deleteReport(req: Request, res: Response) {
       }
     })
     
+    await prisma.comment.deleteMany({ where: { reportId: parseInt(id) } })
+    await prisma.review.deleteMany({ where: { targetId: parseInt(id), type: 'report' } })
+    
     await prisma.report.delete({
       where: { id: parseInt(id) }
     })
@@ -262,7 +265,8 @@ export async function deleteReport(req: Request, res: Response) {
     
     res.json({ message: '汇报已删除' })
   } catch (error) {
-    res.status(500).json({ message: '服务器内部错误' })
+    console.error('Delete report error:', error)
+    res.status(500).json({ message: '服务器内部错误', error: (error as any)?.message })
   }
 }
 

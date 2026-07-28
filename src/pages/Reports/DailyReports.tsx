@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -32,6 +32,8 @@ export default function DailyReports() {
   const [showCommentSuccess, setShowCommentSuccess] = useState(false)
   const [selectedPresets, setSelectedPresets] = useState<string[]>([])
   const [commentText, setCommentText] = useState('')
+  const [commentImages, setCommentImages] = useState<string[]>([])
+  const commentEditorRef = useRef<HTMLDivElement>(null)
   const [previewContent, setPreviewContent] = useState<{ type: string; url: string; name: string } | null>(null)
   const [docDownloadMsg, setDocDownloadMsg] = useState<string | null>(null)
   const { token, user: currentUser } = useAuthStore()
@@ -201,30 +203,92 @@ export default function DailyReports() {
 
   const openCommentDialog = () => {
     setCommentText('')
+    setCommentImages([])
     setSelectedPresets([])
     setShowCommentDialog(true)
+    setTimeout(() => {
+      if (commentEditorRef.current) {
+        commentEditorRef.current.innerHTML = ''
+      }
+    }, 0)
   }
 
   const handlePresetComment = (text: string) => {
     setSelectedPresets(prev => {
       const isSelected = prev.includes(text)
       const newPresets = isSelected ? prev.filter(p => p !== text) : [...prev, text]
-      if (newPresets.length > 0) {
-        setCommentText(newPresets.join('；'))
-      } else {
-        setCommentText('')
+      if (commentEditorRef.current) {
+        commentEditorRef.current.innerText = newPresets.length > 0 ? newPresets.join('；') : ''
       }
+      setCommentText(newPresets.length > 0 ? newPresets.join('；') : '')
       return newPresets
     })
+  }
+
+  const handleEditorInput = () => {
+    if (commentEditorRef.current) {
+      const text = commentEditorRef.current.innerText || ''
+      setCommentText(text)
+    }
+  }
+
+  const handleEditorPaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items
+    if (!items) return
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      if (item.type.indexOf('image') !== -1) {
+        e.preventDefault()
+        const file = item.getAsFile()
+        if (file) {
+          const reader = new FileReader()
+          reader.onload = (event) => {
+            const base64 = event.target?.result as string
+            if (commentEditorRef.current) {
+              const img = document.createElement('img')
+              img.src = base64
+              img.className = 'inline-block w-16 h-16 object-cover rounded-lg mx-1 my-1 border border-slate-600 align-middle cursor-pointer hover:opacity-80 transition-opacity'
+              img.style.maxHeight = ''
+              
+              const selection = window.getSelection()
+              if (selection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0)
+                if (commentEditorRef.current.contains(range.commonAncestorContainer)) {
+                  range.deleteContents()
+                  range.insertNode(img)
+                  range.setStartAfter(img)
+                  range.setEndAfter(img)
+                  selection.removeAllRanges()
+                  selection.addRange(range)
+                } else {
+                  commentEditorRef.current.appendChild(img)
+                }
+              } else {
+                commentEditorRef.current.appendChild(img)
+              }
+              
+              setCommentImages(prev => [...prev, base64])
+              handleEditorInput()
+            }
+          }
+          reader.readAsDataURL(file)
+        }
+        break
+      }
+    }
   }
 
   const submitComment = async () => {
     if (!selectedReport || !currentUser) return
     try {
-      if (commentText.trim()) {
+      const editorContent = commentEditorRef.current?.innerHTML || ''
+      const hasContent = commentText.trim() || commentImages.length > 0
+      
+      if (hasContent) {
         await addComment(token!, selectedReport.id, {
           userId: currentUser.id,
-          content: commentText.trim()
+          content: editorContent || commentText.trim()
         })
       }
       await updateReport(token!, selectedReport.id, { status: '已批示' })
@@ -232,7 +296,9 @@ export default function DailyReports() {
       updateReportInStore(updatedReport)
       setSelectedReport(updatedReport)
       setShowCommentDialog(false)
+      setShowDetailDialog(false)
       setCommentText('')
+      setCommentImages([])
       setSelectedPresets([])
       setShowCommentSuccess(true)
       setTimeout(() => setShowCommentSuccess(false), 2000)
@@ -560,7 +626,7 @@ export default function DailyReports() {
           <div className="space-y-4 py-2">
             <div className="text-sm text-slate-400">快速选择：</div>
             <div className="flex flex-wrap gap-2">
-              {['很棒', '加油', '请抓紧时间！', '请提高质量！'].map((text) => (
+              {['很棒', '加油', '请保持', '请抓紧时间！', '请提高质量！'].map((text) => (
                 <Button
                   key={text}
                   variant="outline"
@@ -576,11 +642,14 @@ export default function DailyReports() {
             
             <div className="space-y-2">
               <div className="text-sm text-slate-400">批示意见：</div>
-              <Textarea
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder="请输入批示意见..."
-                className="min-h-[120px] bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 resize-none"
+              <div
+                ref={commentEditorRef}
+                contentEditable
+                onInput={handleEditorInput}
+                onPaste={handleEditorPaste}
+                className="min-h-[120px] bg-slate-800/50 border border-slate-700 text-white placeholder:text-slate-500 resize-none rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50"
+                data-placeholder="请输入批示意见，可直接粘贴图片..."
+                suppressContentEditableWarning
               />
             </div>
           </div>
@@ -591,7 +660,7 @@ export default function DailyReports() {
             </Button>
             <Button 
               onClick={submitComment}
-              disabled={!commentText.trim()}
+              disabled={!commentText.trim() && commentImages.length === 0}
               className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white disabled:opacity-50"
             >
               提交批示

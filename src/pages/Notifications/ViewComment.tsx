@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MessageSquare, Clock, Eye, CheckCircle, ChevronDown, ChevronUp, Quote } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { MessageSquare, Clock, Eye, CheckCircle, ChevronDown, ChevronUp, Quote, X } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useReportStore } from '@/store/reportStore'
 import { getDailyReports } from '@/api/report'
@@ -9,6 +11,7 @@ import { getDailyReports } from '@/api/report'
 export default function ViewComment() {
   const [loading, setLoading] = useState(true)
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
   
   const { token, user } = useAuthStore()
   const { dailyReports, setDailyReports } = useReportStore()
@@ -142,8 +145,19 @@ export default function ViewComment() {
                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-amber-400 to-orange-500 rounded-l-lg" />
                                 <Quote className="w-5 h-5 text-amber-400/50 absolute top-3 right-3" />
                                 <div className="flex items-start gap-3">
-                                  <div className="flex-1 pl-2">
-                                    <p className="text-amber-100 font-medium text-sm leading-relaxed">{comment.content}</p>
+                                  <div 
+                                    className="flex-1 pl-2 comment-content"
+                                    onClick={(e) => {
+                                      const target = e.target as HTMLElement
+                                      if (target.tagName === 'IMG') {
+                                        setPreviewImage((target as HTMLImageElement).src)
+                                      }
+                                    }}
+                                  >
+                                    <p 
+                                      className="text-amber-100 font-medium text-sm leading-relaxed [&_img]:inline-block [&_img]:w-16 [&_img]:h-16 [&_img]:object-cover [&_img]:rounded-lg [&_img]:mx-1 [&_img]:my-1 [&_img]:border [&_img]:border-amber-500/30 [&_img]:cursor-pointer [&_img]:hover:opacity-80 [&_img]:transition-opacity [&_img]:align-middle" 
+                                      dangerouslySetInnerHTML={{ __html: comment.content }} 
+                                    />
                                   </div>
                                 </div>
                               </div>
@@ -159,6 +173,27 @@ export default function ViewComment() {
           })}
         </div>
       )}
+
+      <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
+        <DialogContent className="sm:max-w-[800px] bg-slate-900 border-slate-700">
+          <DialogHeader className="flex items-center justify-between">
+            <DialogTitle className="text-lg font-semibold text-white">图片预览</DialogTitle>
+            <Button variant="ghost" size="icon" onClick={() => setPreviewImage(null)} className="text-slate-400 hover:text-white absolute right-4 top-4">
+              <X className="w-5 h-5" />
+            </Button>
+          </DialogHeader>
+          
+          <div className="flex items-center justify-center py-4 min-h-[400px]">
+            {previewImage && (
+              <img 
+                src={previewImage} 
+                alt="预览"
+                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
