@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect, useRef } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -248,7 +248,7 @@ export default function DailyReports() {
             if (commentEditorRef.current) {
               const img = document.createElement('img')
               img.src = base64
-              img.className = 'inline-block w-16 h-16 object-cover rounded-lg mx-1 my-1 border border-slate-600 align-middle cursor-pointer hover:opacity-80 transition-opacity'
+              img.className = 'inline-block w-12 h-12 object-cover rounded-md mx-1 my-0.5 border border-slate-600 align-middle cursor-pointer hover:opacity-80 transition-opacity'
               img.style.maxHeight = ''
               
               const selection = window.getSelection()

@@ -68,29 +68,66 @@ export async function getWeeklyReports(req: Request, res: Response) {
     endOfWeek.setDate(startOfWeek.getDate() + 6)
     endOfWeek.setHours(23, 59, 59, 999)
     
-    const reports = await prisma.report.findMany({
-      where: {
-        type: 'daily',
-        userId: userId ? parseInt(userId as string) : undefined,
-        reportDate: {
-          gte: startOfWeek,
-          lte: endOfWeek
-        }
-      },
-      include: { user: true, task: true }
-    })
+    const startOfLastWeek = new Date(startOfWeek)
+    startOfLastWeek.setDate(startOfLastWeek.getDate() - 7)
+    const endOfLastWeek = new Date(endOfWeek)
+    endOfLastWeek.setDate(endOfLastWeek.getDate() - 7)
     
-    const weeklySummary = reports.reduce((acc, report) => {
+    const [currentReports, lastWeekReports] = await Promise.all([
+      prisma.report.findMany({
+        where: {
+          type: 'daily',
+          userId: userId ? parseInt(userId as string) : undefined,
+          reportDate: {
+            gte: startOfWeek,
+            lte: endOfWeek
+          }
+        },
+        include: { user: true, task: true }
+      }),
+      prisma.report.findMany({
+        where: {
+          type: 'daily',
+          userId: userId ? parseInt(userId as string) : undefined,
+          reportDate: {
+            gte: startOfLastWeek,
+            lte: endOfLastWeek
+          }
+        },
+        include: { task: true }
+      })
+    ])
+    
+    const lastWeekSummary = lastWeekReports.reduce((acc, report) => {
       const key = `${report.userId}-${report.taskId}`
       if (!acc[key]) {
+        acc[key] = { totalCompleted: 0, totalUsedHours: 0 }
+      }
+      acc[key].totalCompleted += report.completedQuantity
+      acc[key].totalUsedHours += report.usedHours
+      return acc
+    }, {} as Record<string, any>)
+    
+    const weeklySummary = currentReports.reduce((acc, report) => {
+      const key = `${report.userId}-${report.taskId}`
+      const lastWeek = lastWeekSummary[key] || { totalCompleted: 0, totalUsedHours: 0 }
+      
+      if (!acc[key]) {
+        const targetQty = report.task?.targetQuantity || 0
+        const unit = report.task?.unit || '个'
+        
         acc[key] = {
           userId: report.userId,
           userName: report.user.nickname,
           taskId: report.taskId,
           taskName: report.task.name,
           taskType: report.task.type,
+          targetQuantity: targetQty,
+          unit: unit,
           totalCompleted: 0,
-          totalUsedHours: 0
+          totalUsedHours: 0,
+          lastWeekCompleted: lastWeek.totalCompleted,
+          lastWeekUsedHours: lastWeek.totalUsedHours
         }
       }
       acc[key].totalCompleted += report.completedQuantity
@@ -100,6 +137,7 @@ export async function getWeeklyReports(req: Request, res: Response) {
     
     res.json(Object.values(weeklySummary))
   } catch (error) {
+    console.error('getWeeklyReports error:', error)
     res.status(500).json({ message: '服务器内部错误' })
   }
 }

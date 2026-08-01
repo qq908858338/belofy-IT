@@ -155,7 +155,7 @@ export default function ViewComment() {
                                     }}
                                   >
                                     <p 
-                                      className="text-amber-100 font-medium text-sm leading-relaxed [&_img]:inline-block [&_img]:w-16 [&_img]:h-16 [&_img]:object-cover [&_img]:rounded-lg [&_img]:mx-1 [&_img]:my-1 [&_img]:border [&_img]:border-amber-500/30 [&_img]:cursor-pointer [&_img]:hover:opacity-80 [&_img]:transition-opacity [&_img]:align-middle" 
+                                      className="text-amber-100 font-medium text-sm leading-relaxed [&_img]:inline-block [&_img]:w-12 [&_img]:h-12 [&_img]:object-cover [&_img]:rounded-md [&_img]:mx-1 [&_img]:my-0.5 [&_img]:border [&_img]:border-amber-500/30 [&_img]:cursor-pointer [&_img]:hover:opacity-80 [&_img]:transition-opacity [&_img]:align-middle" 
                                       dangerouslySetInnerHTML={{ __html: comment.content }} 
                                     />
                                   </div>
