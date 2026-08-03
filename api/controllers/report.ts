@@ -115,6 +115,7 @@ export async function getWeeklyReports(req: Request, res: Response) {
       if (!acc[key]) {
         const targetQty = report.task?.targetQuantity || 0
         const unit = report.task?.unit || '个'
+        const actualCompleted = report.task?.completedQuantity || 0
         
         acc[key] = {
           userId: report.userId,
@@ -124,13 +125,14 @@ export async function getWeeklyReports(req: Request, res: Response) {
           taskType: report.task.type,
           targetQuantity: targetQty,
           unit: unit,
-          totalCompleted: 0,
+          actualCompleted: actualCompleted,
+          weekCompleted: 0,
           totalUsedHours: 0,
           lastWeekCompleted: lastWeek.totalCompleted,
           lastWeekUsedHours: lastWeek.totalUsedHours
         }
       }
-      acc[key].totalCompleted += report.completedQuantity
+      acc[key].weekCompleted += report.completedQuantity
       acc[key].totalUsedHours += report.usedHours
       return acc
     }, {} as Record<string, any>)
