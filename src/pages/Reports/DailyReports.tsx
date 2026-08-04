@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect, useRef } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,7 +9,7 @@ import { FileText, ChevronDown, ChevronUp, Calendar, Image, Video, FileText as F
 import { useAuthStore } from '@/store/authStore'
 import { useReportStore } from '@/store/reportStore'
 import { useUserStore } from '@/store/userStore'
-import { getDailyReports, deleteReport, updateReport, addComment } from '@/api/report'
+import { getDailyReports, deleteReport, updateReport, addComment, addReview } from '@/api/report'
 import { getUsers } from '@/api/user'
 import type { Report } from '@/types'
 import { getTaskProgress as calcTaskProgress, getTaskTotalTarget } from '@/lib/utils'
@@ -29,7 +29,10 @@ export default function DailyReports() {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null)
   const [showDetailDialog, setShowDetailDialog] = useState(false)
   const [showCommentDialog, setShowCommentDialog] = useState(false)
+  const [showReviewDialog, setShowReviewDialog] = useState(false)
+  const [reviewScore, setReviewScore] = useState(80)
   const [showCommentSuccess, setShowCommentSuccess] = useState(false)
+  const [showReviewSuccess, setShowReviewSuccess] = useState(false)
   const [selectedPresets, setSelectedPresets] = useState<string[]>([])
   const [commentText, setCommentText] = useState('')
   const [commentImages, setCommentImages] = useState<string[]>([])
@@ -308,6 +311,41 @@ export default function DailyReports() {
     }
   }
 
+  const submitReview = async () => {
+    if (!selectedReport || !currentUser) return
+    try {
+      await addReview(token!, selectedReport.id, {
+        reviewerId: currentUser.id,
+        score: reviewScore
+      })
+      await updateReport(token!, selectedReport.id, { status: '已评审' })
+      const updatedReport = { ...selectedReport, status: '已评审' }
+      updateReportInStore(updatedReport)
+      setSelectedReport(updatedReport)
+      setShowReviewDialog(false)
+      setShowDetailDialog(false)
+      setShowReviewSuccess(true)
+      setTimeout(() => setShowReviewSuccess(false), 2000)
+    } catch (error) {
+      console.error('Failed to submit review:', error)
+      alert('评审提交失败')
+    }
+  }
+
+  const isTaskCompleted = (report: Report) => {
+    const task = report.task
+    if (!task) return false
+    const target = task.targetQuantity || 0
+    const completed = task.completedQuantity || 0
+    return target > 0 && completed >= target
+  }
+
+  const getEffectiveStatus = (report: Report) => {
+    if (report.status === '已评审' || report.status === '已批示') return report.status
+    if (isTaskCompleted(report)) return '待评审'
+    return report.status
+  }
+
   const renderDetailContent = (report: Report) => {
     const task = report.task
     const attachments = parseAttachments(report.attachments)
@@ -342,18 +380,33 @@ export default function DailyReports() {
                 <span className="text-xs text-slate-500">{report.completedQuantity}/{totalTarget}</span>
               </div>
             </div>
-            <Button 
-              onClick={openCommentDialog}
-              disabled={report.status === '已批示'}
-              className={`font-semibold px-4 py-2 rounded-lg shadow-lg transition-all ${
-                report.status === '已批示' 
-                  ? 'bg-green-500/20 text-green-400 cursor-not-allowed shadow-none' 
-                  : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-amber-500/20 hover:shadow-amber-500/40'
-              }`}
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              {report.status === '已批示' ? '已批示' : '批示'}
-            </Button>
+            {isTaskCompleted(report) ? (
+              <Button 
+                onClick={() => { setReviewScore(80); setShowReviewDialog(true) }}
+                disabled={report.status === '已评审'}
+                className={`font-semibold px-4 py-2 rounded-lg shadow-lg transition-all ${
+                  report.status === '已评审' 
+                    ? 'bg-emerald-500/20 text-emerald-400 cursor-not-allowed shadow-none' 
+                    : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-purple-500/20 hover:shadow-purple-500/40'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                {report.status === '已评审' ? '已评审' : '评审'}
+              </Button>
+            ) : (
+              <Button 
+                onClick={openCommentDialog}
+                disabled={report.status === '已批示'}
+                className={`font-semibold px-4 py-2 rounded-lg shadow-lg transition-all ${
+                  report.status === '已批示' 
+                    ? 'bg-green-500/20 text-green-400 cursor-not-allowed shadow-none' 
+                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-amber-500/20 hover:shadow-amber-500/40'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                {report.status === '已批示' ? '已批示' : '批示'}
+              </Button>
+            )}
           </div>
 
           {report.blocker && (
@@ -536,6 +589,7 @@ export default function DailyReports() {
                                 const hasDoc = hasAttachmentType(report, 'document')
                                 const hasLink = hasAttachmentType(report, 'link')
                                 const progress = task ? calcTaskProgress(task, workDaysPerMonth) : 0
+                                const effectiveStatus = getEffectiveStatus(report)
                                 
                                 return (
                                   <div 
@@ -545,12 +599,13 @@ export default function DailyReports() {
                                   >
                                     <div className="flex items-center gap-3 flex-1 min-w-0">
                                       <Badge variant="outline" className={`w-auto ${
-                                        report.status === '待评审' ? 'bg-purple-500/10 text-purple-400 border-purple-500/30' :
-                                        report.status === '已查看' ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' :
-                                        report.status === '已批示' ? 'bg-green-500/10 text-green-400 border-green-500/30' :
+                                        effectiveStatus === '待评审' ? 'bg-purple-500/10 text-purple-400 border-purple-500/30' :
+                                        effectiveStatus === '已评审' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
+                                        effectiveStatus === '已查看' ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' :
+                                        effectiveStatus === '已批示' ? 'bg-green-500/10 text-green-400 border-green-500/30' :
                                         'bg-slate-500/10 text-slate-400 border-slate-500/30'
                                       }`}>
-                                        {report.status === '待评审' ? '待查看' : report.status}
+                                        {effectiveStatus === '待评审' ? '待评审' : effectiveStatus}
                                       </Badge>
                                       {roleBadge}
                                       <span className="font-medium text-white truncate">{task?.name || '无关联任务'}</span>
@@ -708,6 +763,79 @@ export default function DailyReports() {
               </svg>
             </div>
             <p className="text-white font-medium text-center">批示已提交</p>
+          </div>
+        </div>
+      )}
+
+      <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+        <DialogContent className="sm:max-w-[420px] bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-white">评审</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            <div className="space-y-3">
+              <div className="text-sm text-slate-400">评分</div>
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={reviewScore}
+                  onChange={(e) => setReviewScore(parseInt(e.target.value))}
+                  className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                />
+                <span className={`text-2xl font-bold w-16 text-center ${
+                  reviewScore >= 90 ? 'text-green-400' :
+                  reviewScore >= 80 ? 'text-blue-400' :
+                  reviewScore >= 60 ? 'text-yellow-400' : 'text-red-400'
+                }`}>{reviewScore}</span>
+              </div>
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>0</span>
+                <span>25</span>
+                <span>50</span>
+                <span>75</span>
+                <span>100</span>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <div className={`px-6 py-2 rounded-full text-sm font-semibold ${
+                reviewScore >= 90 ? 'bg-green-500/20 text-green-400' :
+                reviewScore >= 80 ? 'bg-blue-500/20 text-blue-400' :
+                reviewScore >= 60 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'
+              }`}>
+                {reviewScore >= 90 ? '优秀' :
+                 reviewScore >= 80 ? '良好' :
+                 reviewScore >= 60 ? '合格' : '待改进'}
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowReviewDialog(false)} className="text-slate-400 hover:text-white">
+              取消
+            </Button>
+            <Button 
+              onClick={submitReview}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+            >
+              提交评审
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {showReviewSuccess && (
+        <div className="fixed inset-0 flex items-center justify-center z-[100] animate-fade-in">
+          <div className="bg-slate-900/95 border border-slate-700 rounded-xl shadow-2xl px-8 py-6 flex flex-col items-center gap-4 min-w-[200px]">
+            <div className="w-14 h-14 bg-emerald-500/20 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-white font-medium text-center">评审已提交</p>
           </div>
         </div>
       )}

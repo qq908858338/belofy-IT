@@ -29,11 +29,18 @@ export async function getDailyReports(req: Request, res: Response) {
   try {
     const { userId, reportDate } = req.query
     
+    const now = new Date()
+    const sevenDaysAgo = new Date(now)
+    sevenDaysAgo.setDate(now.getDate() - 6)
+    sevenDaysAgo.setHours(0, 0, 0, 0)
+    
     const reports = await prisma.report.findMany({
       where: {
         type: 'daily',
         userId: userId ? parseInt(userId as string) : undefined,
-        reportDate: reportDate ? new Date(reportDate as string) : undefined
+        reportDate: reportDate ? new Date(reportDate as string) : {
+          gte: sevenDaysAgo
+        }
       },
       include: {
         user: true,
@@ -359,6 +366,114 @@ export async function addReview(req: Request, res: Response) {
     
     res.json(review)
   } catch (error) {
+    res.status(500).json({ message: '服务器内部错误' })
+  }
+}
+
+export async function getArchivedDailyReports(req: Request, res: Response) {
+  try {
+    const { userId } = req.query
+    
+    const now = new Date()
+    const sevenDaysAgo = new Date(now)
+    sevenDaysAgo.setDate(now.getDate() - 6)
+    sevenDaysAgo.setHours(0, 0, 0, 0)
+    
+    const reports = await prisma.report.findMany({
+      where: {
+        type: 'daily',
+        userId: userId ? parseInt(userId as string) : undefined,
+        reportDate: {
+          lt: sevenDaysAgo
+        }
+      },
+      include: {
+        user: true,
+        task: {
+          include: {
+            user: true,
+            project: true,
+            members: { include: { user: true } }
+          }
+        },
+        comments: { include: { user: true } },
+        reviews: true
+      },
+      orderBy: { reportDate: 'desc' }
+    })
+    
+    res.json(reports)
+  } catch (error) {
+    console.error('getArchivedDailyReports error:', error)
+    res.status(500).json({ message: '服务器内部错误' })
+  }
+}
+
+export async function getArchivedWeeklyReports(req: Request, res: Response) {
+  try {
+    const { userId } = req.query
+    
+    const now = new Date()
+    const startOfCurrentWeek = new Date(now)
+    startOfCurrentWeek.setDate(now.getDate() - now.getDay() + 1)
+    startOfCurrentWeek.setHours(0, 0, 0, 0)
+    
+    const reports = await prisma.report.findMany({
+      where: {
+        type: 'daily',
+        userId: userId ? parseInt(userId as string) : undefined,
+        reportDate: {
+          lt: startOfCurrentWeek
+        }
+      },
+      include: { user: true, task: true },
+      orderBy: { reportDate: 'desc' }
+    })
+    
+    const weeklyMap: Record<string, Record<string, any>> = {}
+    
+    for (const report of reports) {
+      const d = new Date(report.reportDate)
+      const weekStart = new Date(d)
+      weekStart.setDate(d.getDate() - d.getDay() + 1)
+      weekStart.setHours(0, 0, 0, 0)
+      const weekKey = weekStart.toISOString().split('T')[0]
+      const taskKey = `${report.userId}-${report.taskId}`
+      const fullKey = `${weekKey}-${taskKey}`
+      
+      if (!weeklyMap[fullKey]) {
+        const targetQty = report.task?.targetQuantity || 0
+        const unit = report.task?.unit || '个'
+        const actualCompleted = report.task?.completedQuantity || 0
+        
+        weeklyMap[fullKey] = {
+          weekKey,
+          weekStart,
+          userId: report.userId,
+          userName: report.user?.nickname || '未知用户',
+          taskId: report.taskId,
+          taskName: report.task?.name || '未知任务',
+          taskType: report.task?.type || '未知类型',
+          targetQuantity: targetQty,
+          unit: unit,
+          actualCompleted: actualCompleted,
+          weekCompleted: 0,
+          totalUsedHours: 0,
+          lastWeekCompleted: 0,
+          lastWeekUsedHours: 0
+        }
+      }
+      weeklyMap[fullKey].weekCompleted += report.completedQuantity
+      weeklyMap[fullKey].totalUsedHours += report.usedHours
+    }
+    
+    const result = Object.values(weeklyMap).sort((a: any, b: any) => 
+      new Date(b.weekStart).getTime() - new Date(a.weekStart).getTime()
+    )
+    
+    res.json(result)
+  } catch (error) {
+    console.error('getArchivedWeeklyReports error:', error)
     res.status(500).json({ message: '服务器内部错误' })
   }
 }

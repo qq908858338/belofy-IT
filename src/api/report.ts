@@ -34,6 +34,22 @@ export async function getMonthlyReports(token: string, params?: { userId?: numbe
   return response.data
 }
 
+export async function getArchivedDailyReports(token: string, params?: { userId?: number }): Promise<Report[]> {
+  const response = await axios.get(`${API_BASE_URL}/reports/archived/daily`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params
+  })
+  return response.data
+}
+
+export async function getArchivedWeeklyReports(token: string, params?: { userId?: number }): Promise<any[]> {
+  const response = await axios.get(`${API_BASE_URL}/reports/archived/weekly`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params
+  })
+  return response.data
+}
+
 export async function createReport(token: string, data: Omit<Report, 'id' | 'createdAt' | 'updatedAt'>): Promise<Report> {
   const response = await axios.post(`${API_BASE_URL}/reports`, data, {
     headers: { Authorization: `Bearer ${token}` }
