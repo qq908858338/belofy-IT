@@ -29,6 +29,9 @@ export type AggregateReview = {
 export type ReviewAvgAggregateOutputType = {
   id: number | null
   targetId: number | null
+  taskId: number | null
+  projectId: number | null
+  reportId: number | null
   reviewerId: number | null
   score: number | null
 }
@@ -36,6 +39,9 @@ export type ReviewAvgAggregateOutputType = {
 export type ReviewSumAggregateOutputType = {
   id: number | null
   targetId: number | null
+  taskId: number | null
+  projectId: number | null
+  reportId: number | null
   reviewerId: number | null
   score: number | null
 }
@@ -44,6 +50,9 @@ export type ReviewMinAggregateOutputType = {
   id: number | null
   type: string | null
   targetId: number | null
+  taskId: number | null
+  projectId: number | null
+  reportId: number | null
   reviewerId: number | null
   score: number | null
   level: string | null
@@ -54,6 +63,9 @@ export type ReviewMaxAggregateOutputType = {
   id: number | null
   type: string | null
   targetId: number | null
+  taskId: number | null
+  projectId: number | null
+  reportId: number | null
   reviewerId: number | null
   score: number | null
   level: string | null
@@ -64,6 +76,9 @@ export type ReviewCountAggregateOutputType = {
   id: number
   type: number
   targetId: number
+  taskId: number
+  projectId: number
+  reportId: number
   reviewerId: number
   score: number
   level: number
@@ -75,6 +90,9 @@ export type ReviewCountAggregateOutputType = {
 export type ReviewAvgAggregateInputType = {
   id?: true
   targetId?: true
+  taskId?: true
+  projectId?: true
+  reportId?: true
   reviewerId?: true
   score?: true
 }
@@ -82,6 +100,9 @@ export type ReviewAvgAggregateInputType = {
 export type ReviewSumAggregateInputType = {
   id?: true
   targetId?: true
+  taskId?: true
+  projectId?: true
+  reportId?: true
   reviewerId?: true
   score?: true
 }
@@ -90,6 +111,9 @@ export type ReviewMinAggregateInputType = {
   id?: true
   type?: true
   targetId?: true
+  taskId?: true
+  projectId?: true
+  reportId?: true
   reviewerId?: true
   score?: true
   level?: true
@@ -100,6 +124,9 @@ export type ReviewMaxAggregateInputType = {
   id?: true
   type?: true
   targetId?: true
+  taskId?: true
+  projectId?: true
+  reportId?: true
   reviewerId?: true
   score?: true
   level?: true
@@ -110,6 +137,9 @@ export type ReviewCountAggregateInputType = {
   id?: true
   type?: true
   targetId?: true
+  taskId?: true
+  projectId?: true
+  reportId?: true
   reviewerId?: true
   score?: true
   level?: true
@@ -207,6 +237,9 @@ export type ReviewGroupByOutputType = {
   id: number
   type: string
   targetId: number
+  taskId: number | null
+  projectId: number | null
+  reportId: number | null
   reviewerId: number
   score: number
   level: string
@@ -240,6 +273,9 @@ export type ReviewWhereInput = {
   id?: Prisma.IntFilter<"Review"> | number
   type?: Prisma.StringFilter<"Review"> | string
   targetId?: Prisma.IntFilter<"Review"> | number
+  taskId?: Prisma.IntNullableFilter<"Review"> | number | null
+  projectId?: Prisma.IntNullableFilter<"Review"> | number | null
+  reportId?: Prisma.IntNullableFilter<"Review"> | number | null
   reviewerId?: Prisma.IntFilter<"Review"> | number
   score?: Prisma.IntFilter<"Review"> | number
   level?: Prisma.StringFilter<"Review"> | string
@@ -254,6 +290,9 @@ export type ReviewOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   type?: Prisma.SortOrder
   targetId?: Prisma.SortOrder
+  taskId?: Prisma.SortOrderInput | Prisma.SortOrder
+  projectId?: Prisma.SortOrderInput | Prisma.SortOrder
+  reportId?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewerId?: Prisma.SortOrder
   score?: Prisma.SortOrder
   level?: Prisma.SortOrder
@@ -271,6 +310,9 @@ export type ReviewWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ReviewWhereInput | Prisma.ReviewWhereInput[]
   type?: Prisma.StringFilter<"Review"> | string
   targetId?: Prisma.IntFilter<"Review"> | number
+  taskId?: Prisma.IntNullableFilter<"Review"> | number | null
+  projectId?: Prisma.IntNullableFilter<"Review"> | number | null
+  reportId?: Prisma.IntNullableFilter<"Review"> | number | null
   reviewerId?: Prisma.IntFilter<"Review"> | number
   score?: Prisma.IntFilter<"Review"> | number
   level?: Prisma.StringFilter<"Review"> | string
@@ -285,6 +327,9 @@ export type ReviewOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   type?: Prisma.SortOrder
   targetId?: Prisma.SortOrder
+  taskId?: Prisma.SortOrderInput | Prisma.SortOrder
+  projectId?: Prisma.SortOrderInput | Prisma.SortOrder
+  reportId?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewerId?: Prisma.SortOrder
   score?: Prisma.SortOrder
   level?: Prisma.SortOrder
@@ -303,6 +348,9 @@ export type ReviewScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"Review"> | number
   type?: Prisma.StringWithAggregatesFilter<"Review"> | string
   targetId?: Prisma.IntWithAggregatesFilter<"Review"> | number
+  taskId?: Prisma.IntNullableWithAggregatesFilter<"Review"> | number | null
+  projectId?: Prisma.IntNullableWithAggregatesFilter<"Review"> | number | null
+  reportId?: Prisma.IntNullableWithAggregatesFilter<"Review"> | number | null
   reviewerId?: Prisma.IntWithAggregatesFilter<"Review"> | number
   score?: Prisma.IntWithAggregatesFilter<"Review"> | number
   level?: Prisma.StringWithAggregatesFilter<"Review"> | string
@@ -311,6 +359,7 @@ export type ReviewScalarWhereWithAggregatesInput = {
 
 export type ReviewCreateInput = {
   type: string
+  targetId: number
   score: number
   level: string
   createdAt?: Date | string
@@ -324,6 +373,9 @@ export type ReviewUncheckedCreateInput = {
   id?: number
   type: string
   targetId: number
+  taskId?: number | null
+  projectId?: number | null
+  reportId?: number | null
   reviewerId: number
   score: number
   level: string
@@ -332,6 +384,7 @@ export type ReviewUncheckedCreateInput = {
 
 export type ReviewUpdateInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -345,6 +398,9 @@ export type ReviewUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.StringFieldUpdateOperationsInput | string
   targetId?: Prisma.IntFieldUpdateOperationsInput | number
+  taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reportId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
@@ -355,6 +411,9 @@ export type ReviewCreateManyInput = {
   id?: number
   type: string
   targetId: number
+  taskId?: number | null
+  projectId?: number | null
+  reportId?: number | null
   reviewerId: number
   score: number
   level: string
@@ -363,6 +422,7 @@ export type ReviewCreateManyInput = {
 
 export type ReviewUpdateManyMutationInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -372,6 +432,9 @@ export type ReviewUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.StringFieldUpdateOperationsInput | string
   targetId?: Prisma.IntFieldUpdateOperationsInput | number
+  taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reportId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
@@ -392,6 +455,9 @@ export type ReviewCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   type?: Prisma.SortOrder
   targetId?: Prisma.SortOrder
+  taskId?: Prisma.SortOrder
+  projectId?: Prisma.SortOrder
+  reportId?: Prisma.SortOrder
   reviewerId?: Prisma.SortOrder
   score?: Prisma.SortOrder
   level?: Prisma.SortOrder
@@ -401,6 +467,9 @@ export type ReviewCountOrderByAggregateInput = {
 export type ReviewAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   targetId?: Prisma.SortOrder
+  taskId?: Prisma.SortOrder
+  projectId?: Prisma.SortOrder
+  reportId?: Prisma.SortOrder
   reviewerId?: Prisma.SortOrder
   score?: Prisma.SortOrder
 }
@@ -409,6 +478,9 @@ export type ReviewMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   type?: Prisma.SortOrder
   targetId?: Prisma.SortOrder
+  taskId?: Prisma.SortOrder
+  projectId?: Prisma.SortOrder
+  reportId?: Prisma.SortOrder
   reviewerId?: Prisma.SortOrder
   score?: Prisma.SortOrder
   level?: Prisma.SortOrder
@@ -419,6 +491,9 @@ export type ReviewMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   type?: Prisma.SortOrder
   targetId?: Prisma.SortOrder
+  taskId?: Prisma.SortOrder
+  projectId?: Prisma.SortOrder
+  reportId?: Prisma.SortOrder
   reviewerId?: Prisma.SortOrder
   score?: Prisma.SortOrder
   level?: Prisma.SortOrder
@@ -428,6 +503,9 @@ export type ReviewMinOrderByAggregateInput = {
 export type ReviewSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   targetId?: Prisma.SortOrder
+  taskId?: Prisma.SortOrder
+  projectId?: Prisma.SortOrder
+  reportId?: Prisma.SortOrder
   reviewerId?: Prisma.SortOrder
   score?: Prisma.SortOrder
 }
@@ -602,6 +680,7 @@ export type ReviewUncheckedUpdateManyWithoutReportNestedInput = {
 
 export type ReviewCreateWithoutReviewerInput = {
   type: string
+  targetId: number
   score: number
   level: string
   createdAt?: Date | string
@@ -614,6 +693,9 @@ export type ReviewUncheckedCreateWithoutReviewerInput = {
   id?: number
   type: string
   targetId: number
+  taskId?: number | null
+  projectId?: number | null
+  reportId?: number | null
   score: number
   level: string
   createdAt?: Date | string
@@ -651,6 +733,9 @@ export type ReviewScalarWhereInput = {
   id?: Prisma.IntFilter<"Review"> | number
   type?: Prisma.StringFilter<"Review"> | string
   targetId?: Prisma.IntFilter<"Review"> | number
+  taskId?: Prisma.IntNullableFilter<"Review"> | number | null
+  projectId?: Prisma.IntNullableFilter<"Review"> | number | null
+  reportId?: Prisma.IntNullableFilter<"Review"> | number | null
   reviewerId?: Prisma.IntFilter<"Review"> | number
   score?: Prisma.IntFilter<"Review"> | number
   level?: Prisma.StringFilter<"Review"> | string
@@ -659,6 +744,7 @@ export type ReviewScalarWhereInput = {
 
 export type ReviewCreateWithoutTaskInput = {
   type: string
+  targetId: number
   score: number
   level: string
   createdAt?: Date | string
@@ -670,6 +756,9 @@ export type ReviewCreateWithoutTaskInput = {
 export type ReviewUncheckedCreateWithoutTaskInput = {
   id?: number
   type: string
+  targetId: number
+  projectId?: number | null
+  reportId?: number | null
   reviewerId: number
   score: number
   level: string
@@ -703,6 +792,7 @@ export type ReviewUpdateManyWithWhereWithoutTaskInput = {
 
 export type ReviewCreateWithoutProjectInput = {
   type: string
+  targetId: number
   score: number
   level: string
   createdAt?: Date | string
@@ -714,6 +804,9 @@ export type ReviewCreateWithoutProjectInput = {
 export type ReviewUncheckedCreateWithoutProjectInput = {
   id?: number
   type: string
+  targetId: number
+  taskId?: number | null
+  reportId?: number | null
   reviewerId: number
   score: number
   level: string
@@ -747,6 +840,7 @@ export type ReviewUpdateManyWithWhereWithoutProjectInput = {
 
 export type ReviewCreateWithoutReportInput = {
   type: string
+  targetId: number
   score: number
   level: string
   createdAt?: Date | string
@@ -758,6 +852,9 @@ export type ReviewCreateWithoutReportInput = {
 export type ReviewUncheckedCreateWithoutReportInput = {
   id?: number
   type: string
+  targetId: number
+  taskId?: number | null
+  projectId?: number | null
   reviewerId: number
   score: number
   level: string
@@ -793,6 +890,9 @@ export type ReviewCreateManyReviewerInput = {
   id?: number
   type: string
   targetId: number
+  taskId?: number | null
+  projectId?: number | null
+  reportId?: number | null
   score: number
   level: string
   createdAt?: Date | string
@@ -800,6 +900,7 @@ export type ReviewCreateManyReviewerInput = {
 
 export type ReviewUpdateWithoutReviewerInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -812,6 +913,9 @@ export type ReviewUncheckedUpdateWithoutReviewerInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.StringFieldUpdateOperationsInput | string
   targetId?: Prisma.IntFieldUpdateOperationsInput | number
+  taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reportId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -821,6 +925,9 @@ export type ReviewUncheckedUpdateManyWithoutReviewerInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.StringFieldUpdateOperationsInput | string
   targetId?: Prisma.IntFieldUpdateOperationsInput | number
+  taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reportId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -829,6 +936,9 @@ export type ReviewUncheckedUpdateManyWithoutReviewerInput = {
 export type ReviewCreateManyTaskInput = {
   id?: number
   type: string
+  targetId: number
+  projectId?: number | null
+  reportId?: number | null
   reviewerId: number
   score: number
   level: string
@@ -837,6 +947,7 @@ export type ReviewCreateManyTaskInput = {
 
 export type ReviewUpdateWithoutTaskInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -848,6 +959,9 @@ export type ReviewUpdateWithoutTaskInput = {
 export type ReviewUncheckedUpdateWithoutTaskInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reportId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
@@ -857,6 +971,9 @@ export type ReviewUncheckedUpdateWithoutTaskInput = {
 export type ReviewUncheckedUpdateManyWithoutTaskInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reportId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
@@ -866,6 +983,9 @@ export type ReviewUncheckedUpdateManyWithoutTaskInput = {
 export type ReviewCreateManyProjectInput = {
   id?: number
   type: string
+  targetId: number
+  taskId?: number | null
+  reportId?: number | null
   reviewerId: number
   score: number
   level: string
@@ -874,6 +994,7 @@ export type ReviewCreateManyProjectInput = {
 
 export type ReviewUpdateWithoutProjectInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -885,6 +1006,9 @@ export type ReviewUpdateWithoutProjectInput = {
 export type ReviewUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
+  taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reportId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
@@ -894,6 +1018,9 @@ export type ReviewUncheckedUpdateWithoutProjectInput = {
 export type ReviewUncheckedUpdateManyWithoutProjectInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
+  taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reportId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
@@ -903,6 +1030,9 @@ export type ReviewUncheckedUpdateManyWithoutProjectInput = {
 export type ReviewCreateManyReportInput = {
   id?: number
   type: string
+  targetId: number
+  taskId?: number | null
+  projectId?: number | null
   reviewerId: number
   score: number
   level: string
@@ -911,6 +1041,7 @@ export type ReviewCreateManyReportInput = {
 
 export type ReviewUpdateWithoutReportInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -922,6 +1053,9 @@ export type ReviewUpdateWithoutReportInput = {
 export type ReviewUncheckedUpdateWithoutReportInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
+  taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
@@ -931,6 +1065,9 @@ export type ReviewUncheckedUpdateWithoutReportInput = {
 export type ReviewUncheckedUpdateManyWithoutReportInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
+  taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.StringFieldUpdateOperationsInput | string
@@ -943,6 +1080,9 @@ export type ReviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   id?: boolean
   type?: boolean
   targetId?: boolean
+  taskId?: boolean
+  projectId?: boolean
+  reportId?: boolean
   reviewerId?: boolean
   score?: boolean
   level?: boolean
@@ -957,6 +1097,9 @@ export type ReviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   type?: boolean
   targetId?: boolean
+  taskId?: boolean
+  projectId?: boolean
+  reportId?: boolean
   reviewerId?: boolean
   score?: boolean
   level?: boolean
@@ -971,6 +1114,9 @@ export type ReviewSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   type?: boolean
   targetId?: boolean
+  taskId?: boolean
+  projectId?: boolean
+  reportId?: boolean
   reviewerId?: boolean
   score?: boolean
   level?: boolean
@@ -985,13 +1131,16 @@ export type ReviewSelectScalar = {
   id?: boolean
   type?: boolean
   targetId?: boolean
+  taskId?: boolean
+  projectId?: boolean
+  reportId?: boolean
   reviewerId?: boolean
   score?: boolean
   level?: boolean
   createdAt?: boolean
 }
 
-export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "targetId" | "reviewerId" | "score" | "level" | "createdAt", ExtArgs["result"]["review"]>
+export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "targetId" | "taskId" | "projectId" | "reportId" | "reviewerId" | "score" | "level" | "createdAt", ExtArgs["result"]["review"]>
 export type ReviewInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   reviewer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   task?: boolean | Prisma.Review$taskArgs<ExtArgs>
@@ -1023,6 +1172,9 @@ export type $ReviewPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     id: number
     type: string
     targetId: number
+    taskId: number | null
+    projectId: number | null
+    reportId: number | null
     reviewerId: number
     score: number
     level: string
@@ -1457,6 +1609,9 @@ export interface ReviewFieldRefs {
   readonly id: Prisma.FieldRef<"Review", 'Int'>
   readonly type: Prisma.FieldRef<"Review", 'String'>
   readonly targetId: Prisma.FieldRef<"Review", 'Int'>
+  readonly taskId: Prisma.FieldRef<"Review", 'Int'>
+  readonly projectId: Prisma.FieldRef<"Review", 'Int'>
+  readonly reportId: Prisma.FieldRef<"Review", 'Int'>
   readonly reviewerId: Prisma.FieldRef<"Review", 'Int'>
   readonly score: Prisma.FieldRef<"Review", 'Int'>
   readonly level: Prisma.FieldRef<"Review", 'String'>

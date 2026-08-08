@@ -148,15 +148,18 @@ model Review {
   id         Int      @id @default(autoincrement())
   type       String
   targetId   Int
+  taskId     Int?
+  projectId  Int?
+  reportId   Int?
   reviewerId Int
   score      Int
   level      String
   createdAt  DateTime @default(now())
   
   reviewer   User     @relation("Reviewer", fields: [reviewerId], references: [id])
-  task       Task?    @relation("TaskReview", fields: [targetId], references: [id])
-  project    Project? @relation("ProjectReview", fields: [targetId], references: [id])
-  report     Report?  @relation("ReportReview", fields: [targetId], references: [id])
+  task       Task?    @relation("TaskReview", fields: [taskId], references: [id])
+  project    Project? @relation("ProjectReview", fields: [projectId], references: [id])
+  report     Report?  @relation("ReportReview", fields: [reportId], references: [id])
 }
 
 model Achievement {

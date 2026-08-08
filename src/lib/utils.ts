@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getTaskTotalTarget(task: any, workDaysPerMonth?: number): number {
-  if (task.type !== '日常任务' && task.type !== '临时任务') {
+  if (task.type !== '日常任务') {
     return task.targetQuantity || 0
   }
   

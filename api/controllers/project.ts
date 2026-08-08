@@ -221,6 +221,7 @@ export async function reviewProject(req: Request, res: Response) {
       data: {
         type: 'project',
         targetId: parseInt(id),
+        projectId: parseInt(id),
         reviewerId,
         score,
         level

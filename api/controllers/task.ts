@@ -144,42 +144,6 @@ export async function createTask(req: Request, res: Response) {
     })
     
     recordLog(authReq.user?.userId, '创建', `创建了任务"${task.name}"`)
-    
-    res.status(201).json({
-      ...taskWithMembers,
-      user: taskWithMembers?.user ? {
-        id: taskWithMembers.user.id,
-        username: taskWithMembers.user.username,
-        nickname: taskWithMembers.user.nickname,
-        departmentId: taskWithMembers.user.departmentId,
-        department: taskWithMembers.user.department?.name || '',
-        createdAt: taskWithMembers.user.createdAt,
-        updatedAt: taskWithMembers.user.updatedAt
-      } : null,
-      project: taskWithMembers?.project ? {
-        id: taskWithMembers.project.id,
-        name: taskWithMembers.project.name,
-        description: taskWithMembers.project.description,
-        icon: taskWithMembers.project.icon,
-        status: taskWithMembers.project.status,
-        managerId: taskWithMembers.project.managerId,
-        isArchived: taskWithMembers.project.isArchived,
-        createdAt: taskWithMembers.project.createdAt,
-        updatedAt: taskWithMembers.project.updatedAt
-      } : null,
-      members: taskWithMembers?.members.map(member => ({
-        ...member,
-        user: member.user ? {
-          id: member.user.id,
-          username: member.user.username,
-          nickname: member.user.nickname,
-          departmentId: member.user.departmentId,
-          department: member.user.department?.name || '',
-          createdAt: member.user.createdAt,
-          updatedAt: member.user.updatedAt
-        } : null
-      })) || []
-    })
   } catch (error: any) {
     console.error('createTask error:', error.message || error)
     res.status(500).json({ message: '服务器内部错误', detail: error.message })

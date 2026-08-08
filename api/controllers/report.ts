@@ -356,6 +356,7 @@ export async function addReview(req: Request, res: Response) {
       data: {
         type: 'report',
         targetId: parseInt(id),
+        reportId: parseInt(id),
         reviewerId,
         score,
         level
@@ -366,7 +367,8 @@ export async function addReview(req: Request, res: Response) {
     
     res.json(review)
   } catch (error) {
-    res.status(500).json({ message: '服务器内部错误' })
+    console.error('Failed to add review:', error)
+    res.status(500).json({ message: '服务器内部错误', error: error instanceof Error ? error.message : String(error) })
   }
 }
 
