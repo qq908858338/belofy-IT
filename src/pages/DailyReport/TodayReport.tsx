@@ -206,9 +206,6 @@ export default function TodayReport() {
       const today = new Date()
       const todayStr = today.toISOString().split('T')[0]
       
-      console.log('Submitting reports for tasks:', updatedTaskIds)
-      console.log('Submitted data:', submittedData)
-      
       for (const taskId of updatedTaskIds) {
         const data = submittedData[taskId]
         if (data) {
@@ -225,7 +222,6 @@ export default function TodayReport() {
             attachments: data.attachments && Array.isArray(data.attachments) && data.attachments.length > 0 ? JSON.stringify(data.attachments) : undefined,
             resultDesc: data.resultDesc || undefined
           }
-          console.log('Submitting report for task', taskId, ':', reportData)
           await createReport(token!, reportData)
         }
       }

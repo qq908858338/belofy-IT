@@ -642,7 +642,7 @@ function ArchivedDailyList({ reports, expandedUsers, setExpandedUsers, onOpenDet
 
   return (
     <div className="space-y-4">
-      {Object.entries(groupedByUser).map(([userName, userReports]) => {
+      {Object.entries(groupedByUser).map(([userName, userReports]: [string, any[]]) => {
         const isExpanded = expandedUsers[userName] || false
         const avatarLetter = userName[0]
         
@@ -683,7 +683,7 @@ function ArchivedDailyList({ reports, expandedUsers, setExpandedUsers, onOpenDet
               <CardContent className="p-3">
                 {Object.entries(reportsByDate).sort((a, b) => 
                   new Date(b[0]).getTime() - new Date(a[0]).getTime()
-                ).map(([dateKey, dateReports]) => (
+                ).map(([dateKey, dateReports]: [string, any[]]) => (
                   <div key={dateKey} className="mb-3 last:mb-0">
                     <div className="flex items-center gap-2 mb-2 px-1">
                       <CalendarIcon className="w-3.5 h-3.5 text-slate-500" />

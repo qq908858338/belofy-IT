@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
@@ -31,7 +31,7 @@ export default function PeopleManagement() {
     try {
       const [usersData, tasksData, projectsData, reportsData, settingsData] = await Promise.all([
         getUsers(token!),
-        getTasks(token!),
+        getTasks(token!, { isArchived: false }),
         getProjects(token!),
         getReports(token!),
         getSettings(token!),

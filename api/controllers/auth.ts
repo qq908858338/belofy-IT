@@ -6,12 +6,9 @@ import { recordLog } from '../lib/logHelper'
 
 export async function login(req: Request, res: Response) {
   try {
-    console.log('Login request received:', req.body)
-    
     const { username, password } = req.body
     
     if (!username || !password) {
-      console.log('Missing username or password')
       return res.status(400).json({ message: '用户名和密码不能为空' })
     }
     
@@ -20,15 +17,11 @@ export async function login(req: Request, res: Response) {
       include: { department: true }
     })
     
-    console.log('User found:', user ? 'Yes' : 'No')
-    
     if (!user) {
       return res.status(401).json({ message: '用户名或密码错误' })
     }
     
     const isValidPassword = await bcrypt.compare(password, user.password)
-    
-    console.log('Password valid:', isValidPassword)
     
     if (!isValidPassword) {
       return res.status(401).json({ message: '用户名或密码错误' })
@@ -40,8 +33,6 @@ export async function login(req: Request, res: Response) {
       nickname: user.nickname,
       departmentId: user.departmentId
     })
-    
-    console.log('Login successful for user:', user.username)
     
     recordLog(user.id, '登录', `${user.nickname} 登录了系统`)
     

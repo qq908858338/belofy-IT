@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -205,11 +205,7 @@ export default function TaskManagement() {
     return styles[type] || 'bg-slate-500/20 text-slate-300'
   }
 
-  const getUserStats = (userName: string) => {
-    const userTasks = tasks.filter(t => 
-      (t.user?.nickname || '未知用户') === userName ||
-      (t.members?.some(m => m.user?.nickname === userName) || false)
-    )
+  const getUserStats = (userTasks: Task[]) => {
     const userProjects = [...new Set(userTasks.filter(t => t.projectId).map(t => t.projectId))]
     
     let totalCompleted = 0
@@ -217,9 +213,9 @@ export default function TaskManagement() {
     let totalRemainingHours = 0
     
     userTasks.forEach(task => {
-      totalCompleted += task.completedQuantity
-      totalTarget += task.targetQuantity
-      totalRemainingHours += (task.targetQuantity - task.completedQuantity) * task.hoursPerUnit
+      totalCompleted += task.completedQuantity || 0
+      totalTarget += task.targetQuantity || 0
+      totalRemainingHours += ((task.targetQuantity || 0) - (task.completedQuantity || 0)) * (task.hoursPerUnit || 1)
     })
     
     const progress = totalTarget > 0 ? Math.round((totalCompleted / totalTarget) * 100) : 0
@@ -297,7 +293,7 @@ export default function TaskManagement() {
         </Card>
       ) : (
         Object.entries(groupedByUser).map(([userName, userTasks]) => {
-          const stats = getUserStats(userName)
+          const stats = getUserStats(userTasks)
           const projectsMap = groupByProjectAndType(userTasks)
           
           return (

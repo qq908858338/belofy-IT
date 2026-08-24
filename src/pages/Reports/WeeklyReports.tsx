@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect, useMemo } from 'react'
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { TrendingUp, TrendingDown, Clock, Target, CheckCircle2, Minus, ChevronDown, ChevronUp } from 'lucide-react'
@@ -34,9 +34,9 @@ export default function WeeklyReports() {
       if (!acc[key]) acc[key] = []
       acc[key].push(report)
       return acc
-    }, {})
+    }, {} as Record<string, any[]>)
     
-    return Object.entries(groups).map(([userName, reports]) => {
+    return Object.entries(groups).map(([userName, reports]: [string, any[]]) => {
       const totalActual = reports.reduce((sum: number, r: any) => sum + (r.actualCompleted || 0), 0)
       const totalTarget = reports.reduce((sum: number, r: any) => sum + (r.targetQuantity || 0), 0)
       const totalWeek = reports.reduce((sum: number, r: any) => sum + (r.weekCompleted || 0), 0)
